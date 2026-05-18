@@ -5,11 +5,14 @@ import Image from "next/image";
 import { useLang } from "@/context/LanguageContext";
 import { products } from "@/data/products";
 
+// Hero spotlights the first 8 of the catalog. Full 31-item collection lives at /products.
+const HERO_BOTTLES = products.slice(0, 8);
+
 export default function Hero() {
   const { t, lang } = useLang();
   const [selected, setSelected] = useState(0);
 
-  const selectedProduct = products[selected];
+  const selectedProduct = HERO_BOTTLES[selected];
   const selectedName =
     lang === "ar" ? selectedProduct.nameAr : selectedProduct.nameEn;
 
@@ -55,13 +58,13 @@ export default function Hero() {
         </p>
       </div>
 
-      {/* Bottle lineup */}
+      {/* Bottle lineup — featured 8 bottles (full collection is on /products) */}
       <div className="relative z-10 flex-1 w-full flex items-center justify-center px-4">
         <div
           className="flex items-end gap-3 sm:gap-5 lg:gap-7 overflow-x-auto sm:overflow-visible w-full max-w-[1300px] px-6 py-12 scrollbar-hide"
           style={{ scrollbarWidth: "none" }}
         >
-          {products.map((p, i) => {
+          {HERO_BOTTLES.map((p, i) => {
             const isSelected = selected === i;
             const name = lang === "ar" ? p.nameAr : p.nameEn;
             return (
@@ -166,7 +169,7 @@ export default function Hero() {
 
       {/* Position indicator dots (faint) */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-        {products.map((_, i) => (
+        {HERO_BOTTLES.map((_, i) => (
           <button
             key={i}
             onClick={() => setSelected(i)}
