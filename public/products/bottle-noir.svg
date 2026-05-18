@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" fill="none">
+  <defs>
+    <linearGradient id="noirBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3a3a3a"/>
+      <stop offset="50%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#0a0a0a"/>
+    </linearGradient>
+    <linearGradient id="noirHighlight" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25"/>
+      <stop offset="40%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="noirCap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#8a6b1c"/>
+    </linearGradient>
+  </defs>
+  <rect x="82" y="10" width="36" height="28" rx="3" fill="url(#noirCap)"/>
+  <rect x="90" y="38" width="20" height="12" fill="#8a6b1c"/>
+  <path d="M55 64 L145 64 L145 254 Q145 264 135 264 L65 264 Q55 264 55 254 Z" fill="url(#noirBody)"/>
+  <path d="M55 64 L145 64 L145 254 Q145 264 135 264 L65 264 Q55 264 55 254 Z" fill="url(#noirHighlight)"/>
+  <rect x="68" y="150" width="64" height="50" rx="2" fill="#d4af37" fill-opacity="0.15"/>
+  <rect x="68" y="150" width="64" height="50" rx="2" stroke="#d4af37" stroke-opacity="0.5" stroke-width="0.5" fill="none"/>
+  <text x="100" y="172" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#d4af37" font-style="italic">Orith</text>
+  <text x="100" y="190" text-anchor="middle" font-family="Arial, sans-serif" font-size="6" fill="#d4af37" letter-spacing="1.5">EAU DE PARFUM</text>
+</svg>
