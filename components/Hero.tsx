@@ -1,18 +1,49 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useLang } from "@/context/LanguageContext";
-import { products } from "@/data/products";
-
-// Hero spotlights the first 8 of the catalog. Full 31-item collection lives at /products.
-const HERO_BOTTLES = products.slice(0, 8);
+import { Product } from "@/types";
 
 export default function Hero() {
   const { t, lang } = useLang();
   const [selected, setSelected] = useState(0);
+  const [heroBottles, setHeroBottles] = useState<Product[]>([]);
 
-  const selectedProduct = HERO_BOTTLES[selected];
+  useEffect(() => {
+    fetch("/api/products?limit=8")
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          setHeroBottles(
+            res.data.map((p: Record<string, unknown>) => ({
+              id: p.id,
+              nameEn: p.nameEn,
+              nameAr: p.nameAr,
+              descriptionEn: p.descriptionEn,
+              descriptionAr: p.descriptionAr,
+              price: p.price,
+              originalPrice: p.originalPrice,
+              image: p.image,
+              sizes: p.sizes,
+              category: p.category,
+              badge: p.badge,
+            }))
+          );
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  if (heroBottles.length === 0) {
+    return (
+      <section className="hero-dark relative min-h-screen flex items-center justify-center text-ivory">
+        <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+      </section>
+    );
+  }
+
+  const selectedProduct = heroBottles[selected];
   const selectedName =
     lang === "ar" ? selectedProduct.nameAr : selectedProduct.nameEn;
 
@@ -58,13 +89,13 @@ export default function Hero() {
         </p>
       </div>
 
-      {/* Bottle lineup — featured 8 bottles (full collection is on /products) */}
+      {/* Bottle lineup */}
       <div className="relative z-10 flex-1 w-full flex items-center justify-center px-4">
         <div
           className="flex items-end gap-3 sm:gap-5 lg:gap-7 overflow-x-auto sm:overflow-visible w-full max-w-[1300px] px-6 py-12 scrollbar-hide"
           style={{ scrollbarWidth: "none" }}
         >
-          {HERO_BOTTLES.map((p, i) => {
+          {heroBottles.map((p, i) => {
             const isSelected = selected === i;
             const name = lang === "ar" ? p.nameAr : p.nameEn;
             return (
@@ -169,7 +200,7 @@ export default function Hero() {
 
       {/* Position indicator dots (faint) */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-        {HERO_BOTTLES.map((_, i) => (
+        {heroBottles.map((_, i) => (
           <button
             key={i}
             onClick={() => setSelected(i)}

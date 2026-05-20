@@ -1,13 +1,52 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLang } from "@/context/LanguageContext";
-import { products, categories } from "@/data/products";
+import { categories } from "@/data/products";
+import { Product } from "@/types";
 import ProductCard from "@/components/ProductCard";
 
 export default function ProductsPage() {
   const { t, lang } = useLang();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/products?limit=100")
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          setProducts(
+            res.data.map((p: Record<string, unknown>) => ({
+              id: p.id,
+              nameEn: p.nameEn,
+              nameAr: p.nameAr,
+              descriptionEn: p.descriptionEn,
+              descriptionAr: p.descriptionAr,
+              price: p.price,
+              originalPrice: p.originalPrice,
+              image: p.image,
+              sizes: p.sizes,
+              category: p.category,
+              badge: p.badge,
+              notes:
+                (p.notesTop as string[])?.length ||
+                (p.notesHeart as string[])?.length ||
+                (p.notesBase as string[])?.length
+                  ? {
+                      top: p.notesTop as string[],
+                      heart: p.notesHeart as string[],
+                      base: p.notesBase as string[],
+                    }
+                  : undefined,
+            }))
+          );
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -21,7 +60,7 @@ export default function ProductsPage() {
         activeCategory === "all" || p.category === activeCategory;
       return matchSearch && matchCat;
     });
-  }, [search, activeCategory, lang]);
+  }, [search, activeCategory, lang, products]);
 
   return (
     <div className="page-transition pt-24 pb-24 min-h-screen bg-ivory">
@@ -97,7 +136,19 @@ export default function ProductsPage() {
         </p>
 
         {/* Grid */}
-        {filtered.length > 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-3xl overflow-hidden shadow-card animate-pulse">
+                <div className="aspect-[3/4] bg-beige/40" />
+                <div className="p-5 space-y-3">
+                  <div className="h-5 bg-beige/40 rounded w-3/4" />
+                  <div className="h-4 bg-beige/40 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filtered.map((product, i) => (
               <ProductCard key={product.id} product={product} delay={i * 80} />

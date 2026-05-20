@@ -1,13 +1,38 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLang } from "@/context/LanguageContext";
-import { products } from "@/data/products";
+import { Product } from "@/types";
 import ProductCard from "./ProductCard";
 
 export default function FeaturedProducts() {
   const { t } = useLang();
-  const featured = products.slice(0, 4);
+  const [featured, setFeatured] = useState<Product[]>([]);
+
+  useEffect(() => {
+    fetch("/api/products?limit=4")
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          setFeatured(
+            res.data.map((p: Record<string, unknown>) => ({
+              id: p.id,
+              nameEn: p.nameEn,
+              nameAr: p.nameAr,
+              descriptionEn: p.descriptionEn,
+              descriptionAr: p.descriptionAr,
+              price: p.price,
+              originalPrice: p.originalPrice,
+              image: p.image,
+              sizes: p.sizes,
+              category: p.category,
+              badge: p.badge,
+            }))
+          );
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <section className="py-24 bg-ivory">

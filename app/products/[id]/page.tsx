@@ -1,19 +1,88 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLang } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
-import { products } from "@/data/products";
+import { Product } from "@/types";
+import ProductCard from "@/components/ProductCard";
 
 export default function ProductDetailsPage() {
   const params = useParams();
   const { t, lang } = useLang();
   const { addItem } = useCart();
-  const product = products.find((p) => p.id === params.id);
-  const [selectedSize, setSelectedSize] = useState(product?.sizes[0] || "");
+
+  const [product, setProduct] = useState<Product | null>(null);
+  const [related, setRelated] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedSize, setSelectedSize] = useState("");
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/products/${params.id}`)
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          const p = res.data;
+          const mapped: Product = {
+            id: p.id,
+            nameEn: p.nameEn,
+            nameAr: p.nameAr,
+            descriptionEn: p.descriptionEn,
+            descriptionAr: p.descriptionAr,
+            price: p.price,
+            originalPrice: p.originalPrice,
+            image: p.image,
+            sizes: p.sizes,
+            category: p.category,
+            badge: p.badge,
+            notes:
+              p.notesTop?.length || p.notesHeart?.length || p.notesBase?.length
+                ? { top: p.notesTop, heart: p.notesHeart, base: p.notesBase }
+                : undefined,
+          };
+          setProduct(mapped);
+          setSelectedSize(mapped.sizes[0] || "");
+
+          fetch(`/api/products?category=${p.category}&limit=4`)
+            .then((r) => r.json())
+            .then((r) => {
+              if (r.success && r.data) {
+                setRelated(
+                  r.data
+                    .filter((rp: Record<string, unknown>) => rp.id !== p.id)
+                    .slice(0, 3)
+                    .map((rp: Record<string, unknown>) => ({
+                      id: rp.id,
+                      nameEn: rp.nameEn,
+                      nameAr: rp.nameAr,
+                      descriptionEn: rp.descriptionEn,
+                      descriptionAr: rp.descriptionAr,
+                      price: rp.price,
+                      originalPrice: rp.originalPrice,
+                      image: rp.image,
+                      sizes: rp.sizes,
+                      category: rp.category,
+                      badge: rp.badge,
+                    }))
+                );
+              }
+            });
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="pt-32 pb-24 min-h-screen bg-ivory flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -38,10 +107,6 @@ export default function ProductDetailsPage() {
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
-
-  const related = products.filter(
-    (p) => p.id !== product.id && p.category === product.category
-  ).slice(0, 3);
 
   return (
     <div className="page-transition pt-24 pb-24 min-h-screen bg-ivory">
