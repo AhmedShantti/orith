@@ -6,10 +6,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Orith — Luxury Perfumery",
+  title: "ORITH — Maison de Parfum",
   description:
-    "Discover handcrafted luxury fragrances. Orith — The art of luxury perfumery.",
-  keywords: "luxury perfume, oud, fragrance, arabic perfume, orith",
+    "ORITH — Maison de Parfum, est. 1995. Timeless by design, defined by essence. Extrait de Parfum, crafted with precision.",
+  keywords: "orith, maison de parfum, extrait de parfum, luxury perfume, oud, fragrance",
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
         <link
-          href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600&family=Tajawal:wght@300;400;500;700;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cinzel:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Jost:wght@300;400;500;600&family=Tajawal:wght@300;400;500;700;900&display=swap"
           rel="stylesheet"
         />
       </head>

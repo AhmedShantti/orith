@@ -3,6 +3,7 @@ import React, { useState, useMemo } from "react";
 import { useLang } from "@/context/LanguageContext";
 import { products, categories } from "@/data/products";
 import ProductCard from "@/components/ProductCard";
+import Emblem from "@/components/Emblem";
 
 export default function ProductsPage() {
   const { t, lang } = useLang();
@@ -24,65 +25,52 @@ export default function ProductsPage() {
   }, [search, activeCategory, lang]);
 
   return (
-    <div className="page-transition pt-24 pb-24 min-h-screen bg-ivory">
+    <div className="page-transition pt-32 pb-28 min-h-screen bg-ivory">
       {/* Page header */}
-      <div className="bg-gradient-to-b from-beige/80 to-ivory py-16 mb-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="gold-line" />
-            <span className="text-xs tracking-[0.4em] uppercase text-gold font-body font-light">
-              Collection
-            </span>
-            <div className="gold-line" />
+      <div className="max-w-[1500px] mx-auto px-6 lg:px-10 mb-14">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-obsidian/12 pb-10">
+          <div>
+            <p className="eyebrow text-crimson mb-5">Maison de Parfum · Collection</p>
+            <h1 className="display text-5xl sm:text-6xl lg:text-7xl text-obsidian" style={{ fontWeight: 600 }}>
+              {t.products.title}
+            </h1>
           </div>
-          <h1
-            className="font-display text-4xl sm:text-5xl lg:text-6xl font-light text-obsidian"
-            style={{ fontFamily: "var(--font-cormorant)" }}
-          >
-            {t.products.title}
-          </h1>
-          <p className="font-body text-obsidian/50 mt-3 text-sm sm:text-base">
+          <p className="accent-serif text-obsidian/55 text-lg max-w-xs md:pb-2">
             {t.products.subtitle}
           </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1500px] mx-auto px-6 lg:px-10">
         {/* Search + Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-10 items-start sm:items-center">
+        <div className="flex flex-col lg:flex-row gap-6 mb-12 items-start lg:items-center lg:justify-between">
           {/* Search */}
-          <div className="relative flex-1 max-w-sm">
+          <div className="relative w-full max-w-sm border-b border-obsidian/20 focus-within:border-crimson transition-colors">
             <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              className="absolute top-1/2 -translate-y-1/2 start-4 text-obsidian/30"
+              width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"
+              className="absolute top-1/2 -translate-y-1/2 start-0 text-obsidian/30"
             >
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t.products.search}
-              className="w-full ps-10 pe-4 py-3 rounded-full border border-obsidian/10 bg-white text-sm font-body text-obsidian placeholder-obsidian/30 focus:outline-none focus:border-gold transition-colors"
+              className="w-full ps-7 pe-2 py-3 bg-transparent text-sm font-body text-obsidian placeholder-obsidian/30 focus:outline-none tracking-wide"
             />
           </div>
 
           {/* Categories */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-x-6 gap-y-3">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-4 py-2 rounded-full text-xs tracking-widest uppercase font-body transition-all duration-300 ${
+                className={`eyebrow text-[10px] pb-1.5 border-b transition-colors ${
                   activeCategory === cat.id
-                    ? "bg-obsidian text-white"
-                    : "border border-obsidian/15 text-obsidian/60 hover:border-gold hover:text-gold"
+                    ? "border-crimson text-crimson"
+                    : "border-transparent text-obsidian/50 hover:text-obsidian"
                 }`}
               >
                 {lang === "ar" ? cat.labelAr : cat.labelEn}
@@ -92,31 +80,26 @@ export default function ProductsPage() {
         </div>
 
         {/* Results count */}
-        <p className="text-xs font-body text-obsidian/40 mb-6 tracking-wider">
-          {filtered.length} fragrance{filtered.length !== 1 ? "s" : ""} found
+        <p className="eyebrow text-[9px] text-obsidian/40 mb-8">
+          {String(filtered.length).padStart(2, "0")} — Fragrance{filtered.length !== 1 ? "s" : ""}
         </p>
 
         {/* Grid */}
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filtered.map((product, i) => (
-              <ProductCard key={product.id} product={product} delay={i * 80} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-obsidian/10 border border-obsidian/10">
+            {filtered.map((product) => (
+              <div key={product.id} className="bg-ivory">
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-24 flex flex-col items-center gap-4">
-            <div className="w-20 h-20 rounded-full bg-beige flex items-center justify-center text-obsidian/20">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </div>
-            <p className="font-display text-2xl font-light text-obsidian/40" style={{ fontFamily: "var(--font-cormorant)" }}>
-              {t.products.noResults}
-            </p>
+          <div className="text-center py-24 flex flex-col items-center gap-5">
+            <Emblem size={40} className="text-obsidian/20" />
+            <p className="display text-2xl text-obsidian/40">{t.products.noResults}</p>
             <button
               onClick={() => { setSearch(""); setActiveCategory("all"); }}
-              className="text-xs tracking-widest uppercase text-gold font-body hover:underline"
+              className="eyebrow text-[10px] text-crimson link-underline"
             >
               Clear filters
             </button>

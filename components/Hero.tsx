@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useLang } from "@/context/LanguageContext";
 import { products } from "@/data/products";
+import Emblem from "./Emblem";
 
 // Hero spotlights the first 8 of the catalog. Full 31-item collection lives at /products.
 const HERO_BOTTLES = products.slice(0, 8);
@@ -36,16 +37,26 @@ export default function Hero() {
       <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent pointer-events-none z-[2]" />
       <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black to-transparent pointer-events-none z-[2]" />
 
+      {/* Giant faded wordmark behind the lineup */}
+      <span
+        className="section-watermark"
+        style={{ color: "transparent", WebkitTextStroke: "1px rgba(178,58,68,0.13)", top: "6%" }}
+        aria-hidden
+      >
+        ORITH
+      </span>
+
       {/* Brand title block */}
       <div className="relative z-10 flex flex-col items-center pt-28 sm:pt-32 mb-2">
+        <Emblem size={34} className="text-gold/70 mb-5" />
         <h1
-          className="font-display text-2xl sm:text-3xl tracking-[0.45em] uppercase text-ivory"
-          style={{ fontFamily: "var(--font-cormorant)", fontWeight: 400 }}
+          className="font-display text-3xl sm:text-4xl tracking-[0.4em] text-ivory"
+          style={{ fontFamily: "var(--font-cinzel)", fontWeight: 600 }}
         >
-          Orith
+          ORITH
         </h1>
         <p className="text-[9px] sm:text-[10px] tracking-[0.5em] uppercase text-ivory/45 font-body font-light mt-3">
-          Signature Collection
+          Maison de Parfum
         </p>
         {/* tiny gold divider */}
         <div className="mt-6 flex items-center gap-3 text-ivory/40">
@@ -85,7 +96,7 @@ export default function Hero() {
                   <p
                     className="font-display text-xs sm:text-sm text-ivory tracking-[0.15em]"
                     style={{
-                      fontFamily: "var(--font-cormorant)",
+                      fontFamily: "var(--font-cinzel)",
                       fontStyle: lang === "en" ? "italic" : "normal",
                       fontWeight: 400,
                     }}
@@ -93,7 +104,7 @@ export default function Hero() {
                     {name}
                   </p>
                   <p className="text-[7px] sm:text-[8px] tracking-[0.4em] uppercase text-ivory/35 font-body mt-1">
-                    Eau de Parfum
+                    Extrait de Parfum
                   </p>
                 </div>
 
@@ -107,9 +118,9 @@ export default function Hero() {
                   style={
                     isSelected
                       ? {
-                          border: "1px solid rgba(212, 175, 55, 0.7)",
+                          border: "1px solid rgba(178, 58, 68, 0.75)",
                           boxShadow:
-                            "0 0 0 1px rgba(212,175,55,0.15), 0 30px 60px rgba(212,175,55,0.18), inset 0 0 30px rgba(212,175,55,0.06)",
+                            "0 0 0 1px rgba(142,27,38,0.18), 0 30px 60px rgba(142,27,38,0.22), inset 0 0 30px rgba(178,58,68,0.08)",
                         }
                       : {}
                   }
@@ -141,7 +152,7 @@ export default function Hero() {
                     width: isSelected ? "120%" : "90%",
                     height: "10px",
                     background:
-                      "radial-gradient(ellipse at center, rgba(212,175,55,0.4) 0%, transparent 70%)",
+                      "radial-gradient(ellipse at center, rgba(178,58,68,0.45) 0%, transparent 70%)",
                     filter: "blur(4px)",
                   }}
                 />
@@ -230,7 +241,7 @@ function CornerTick({
       <svg viewBox="0 0 10 10" fill="none">
         <path
           d="M0 0 L4 0 M0 0 L0 4"
-          stroke="#d4af37"
+          stroke="#B23A44"
           strokeWidth="1"
         />
       </svg>

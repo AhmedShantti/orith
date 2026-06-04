@@ -15,9 +15,9 @@ export default function CartItem({ item }: CartItemProps) {
   const name = lang === "ar" ? item.product.nameAr : item.product.nameEn;
 
   return (
-    <div className="flex gap-4 p-4 bg-white rounded-2xl shadow-card group hover:shadow-card-hover transition-shadow duration-300">
+    <div className="flex gap-4 p-4 bg-[#FBF8F2] border border-obsidian/12 group hover:border-crimson/40 transition-colors duration-300">
       {/* Image */}
-      <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-champagne/40 via-ivory to-beige/60 flex items-center justify-center">
+      <div className="relative w-20 h-20 sm:w-24 sm:h-24 overflow-hidden flex-shrink-0 bg-gradient-to-b from-[#FBF8F2] to-[#EFE7DB] border border-obsidian/8 flex items-center justify-center">
         <Image
           src={item.product.image}
           alt={name}
@@ -54,19 +54,19 @@ export default function CartItem({ item }: CartItemProps) {
         {/* Qty + Price */}
         <div className="flex items-center justify-between mt-3">
           {/* Qty controls */}
-          <div className="flex items-center gap-2 border border-obsidian/10 rounded-full px-1 py-0.5">
+          <div className="flex items-center border border-obsidian/15">
             <button
               onClick={() => updateQty(item.product.id, item.selectedSize, -1)}
-              className="w-7 h-7 rounded-full flex items-center justify-center text-obsidian/50 hover:bg-gold/10 hover:text-gold transition-all"
+              className="w-8 h-8 flex items-center justify-center text-obsidian/50 hover:bg-crimson hover:text-ivory transition-all"
             >
               −
             </button>
-            <span className="text-sm font-body w-5 text-center text-obsidian">
+            <span className="text-sm font-body w-8 text-center text-obsidian border-x border-obsidian/15 h-8 flex items-center justify-center">
               {item.quantity}
             </span>
             <button
               onClick={() => updateQty(item.product.id, item.selectedSize, 1)}
-              className="w-7 h-7 rounded-full flex items-center justify-center text-obsidian/50 hover:bg-gold/10 hover:text-gold transition-all"
+              className="w-8 h-8 flex items-center justify-center text-obsidian/50 hover:bg-crimson hover:text-ivory transition-all"
             >
               +
             </button>
@@ -75,7 +75,7 @@ export default function CartItem({ item }: CartItemProps) {
           {/* Price */}
           <span
             className="font-display text-xl font-light text-obsidian"
-            style={{ fontFamily: "var(--font-cormorant)" }}
+            style={{ fontFamily: "var(--font-cinzel)" }}
           >
             {(item.product.price * item.quantity).toLocaleString()}
             <span className="text-sm font-body text-obsidian/40 ms-1">
@@ -87,3 +87,4 @@ export default function CartItem({ item }: CartItemProps) {
     </div>
   );
 }
+

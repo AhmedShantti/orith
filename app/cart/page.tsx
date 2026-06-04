@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLang } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
 import CartItem from "@/components/CartItem";
+import Emblem from "@/components/Emblem";
 
 const WHATSAPP_NUMBER = "201000000000";
 
@@ -30,36 +31,17 @@ export default function CartPage() {
     return (
       <div className="page-transition pt-32 pb-24 min-h-screen bg-ivory flex items-center justify-center">
         <div className="text-center max-w-sm mx-auto px-4">
-          {/* Empty state illustration */}
-          <div className="w-32 h-32 rounded-full bg-beige mx-auto flex items-center justify-center mb-8">
-            <svg
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1"
-              className="text-obsidian/20"
-            >
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <path d="M16 10a4 4 0 01-8 0" />
-            </svg>
+          <div className="flex justify-center mb-8">
+            <Emblem size={48} className="text-obsidian/20" />
           </div>
 
-          <h1
-            className="font-display text-4xl font-light text-obsidian mb-4"
-            style={{ fontFamily: "var(--font-cormorant)" }}
-          >
+          <h1 className="display text-4xl sm:text-5xl text-obsidian mb-5" style={{ fontWeight: 500 }}>
             {t.cart.empty}
           </h1>
-          <p className="font-body text-obsidian/50 text-sm leading-relaxed mb-10">
+          <p className="accent-serif text-obsidian/55 text-lg leading-relaxed mb-10">
             {t.cart.emptyDesc}
           </p>
-          <Link
-            href="/products"
-            className="inline-block btn-gold px-10 py-4 rounded-full text-sm tracking-[0.15em] uppercase font-body font-medium"
-          >
+          <Link href="/products" className="btn-crimson">
             {t.cart.shopNow}
           </Link>
         </div>
@@ -71,17 +53,9 @@ export default function CartPage() {
     <div className="page-transition pt-24 pb-24 min-h-screen bg-ivory">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-12 mt-8">
-          <div className="flex items-center gap-4 mb-2">
-            <div className="gold-line" />
-            <span className="text-xs tracking-[0.4em] uppercase text-gold font-body font-light">
-              Your Order
-            </span>
-          </div>
-          <h1
-            className="font-display text-4xl sm:text-5xl font-light text-obsidian"
-            style={{ fontFamily: "var(--font-cormorant)" }}
-          >
+        <div className="mb-12 mt-4 border-b border-obsidian/12 pb-8">
+          <p className="eyebrow text-crimson mb-4">Your Order</p>
+          <h1 className="display text-5xl sm:text-6xl text-obsidian" style={{ fontWeight: 600 }}>
             {t.cart.title}
           </h1>
         </div>
@@ -99,11 +73,8 @@ export default function CartPage() {
 
           {/* Summary */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-3xl p-8 shadow-card sticky top-28">
-              <h3
-                className="font-display text-2xl font-light text-obsidian mb-6"
-                style={{ fontFamily: "var(--font-cormorant)" }}
-              >
+            <div className="bg-[#FBF8F2] border border-obsidian/12 p-8 sticky top-28">
+              <h3 className="display text-2xl text-obsidian mb-6" style={{ fontWeight: 500 }}>
                 Order Summary
               </h3>
 
@@ -148,7 +119,7 @@ export default function CartPage() {
                 </span>
                 <span
                   className="font-display text-3xl font-light text-obsidian"
-                  style={{ fontFamily: "var(--font-cormorant)" }}
+                  style={{ fontFamily: "var(--font-cinzel)" }}
                 >
                   {totalPrice.toLocaleString()}
                   <span className="text-sm font-body text-obsidian/50 ms-1">
@@ -158,28 +129,15 @@ export default function CartPage() {
               </div>
 
               {/* WhatsApp order button */}
-              <button
-                onClick={handleWhatsAppOrder}
-                className="w-full py-4 rounded-full bg-[#25D366] hover:bg-[#20bd5c] text-white text-sm tracking-[0.1em] uppercase font-body font-medium transition-all duration-300 flex items-center justify-center gap-3 hover:shadow-[0_8px_24px_rgba(37,211,102,0.3)] hover:-translate-y-0.5"
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
+              <button onClick={handleWhatsAppOrder} className="btn-crimson w-full">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
                 </svg>
                 {t.cart.orderWhatsApp}
               </button>
 
               {/* Continue shopping */}
-              <Link
-                href="/products"
-                className="w-full mt-3 py-3 rounded-full border border-obsidian/10 text-obsidian/50 text-xs tracking-widest uppercase font-body hover:border-gold hover:text-gold transition-all duration-300 flex items-center justify-center"
-              >
+              <Link href="/products" className="btn-ghost text-obsidian w-full mt-3">
                 ← Continue Shopping
               </Link>
             </div>

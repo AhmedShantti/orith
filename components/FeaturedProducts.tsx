@@ -4,53 +4,52 @@ import Link from "next/link";
 import { useLang } from "@/context/LanguageContext";
 import { products } from "@/data/products";
 import ProductCard from "./ProductCard";
+import Reveal from "./Reveal";
 
 export default function FeaturedProducts() {
   const { t } = useLang();
   const featured = products.slice(0, 4);
 
   return (
-    <section className="py-24 bg-ivory">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="gold-line" />
-            <span className="text-xs tracking-[0.4em] uppercase text-gold font-body font-light">
-              Collection
-            </span>
-            <div className="gold-line" />
+    <section className="py-28 sm:py-36 bg-ivory">
+      <div className="max-w-7xl mx-auto px-6 lg:px-10">
+        {/* Header — editorial split */}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-8 mb-16">
+          <div>
+            <Reveal>
+              <p className="eyebrow text-crimson mb-5">{t.products.title}</p>
+            </Reveal>
+            <Reveal delay={1}>
+              <h2 className="display text-4xl sm:text-5xl lg:text-6xl text-obsidian" style={{ fontWeight: 500 }}>
+                The Collection
+              </h2>
+            </Reveal>
           </div>
-          <h2
-            className="font-display text-4xl sm:text-5xl font-light text-obsidian mb-4"
-            style={{ fontFamily: "var(--font-cormorant)" }}
-          >
-            {t.products.title}
-          </h2>
-          <p className="font-body text-obsidian/50 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
-            {t.products.subtitle}
-          </p>
+          <Reveal delay={2} className="md:pb-2">
+            <p className="accent-serif text-obsidian/55 text-lg max-w-xs">
+              {t.products.subtitle}
+            </p>
+          </Reveal>
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-obsidian/10 border border-obsidian/10">
           {featured.map((product, i) => (
-            <ProductCard key={product.id} product={product} delay={i * 100} />
+            <Reveal key={product.id} delay={(i % 4) as 0 | 1 | 2 | 3} className="bg-ivory">
+              <ProductCard product={product} />
+            </Reveal>
           ))}
         </div>
 
         {/* CTA */}
-        <div className="text-center mt-14">
-          <Link
-            href="/products"
-            className="inline-flex items-center gap-3 px-10 py-4 rounded-full border border-gold text-gold text-sm tracking-[0.15em] uppercase font-body font-medium hover:bg-gold hover:text-white transition-all duration-300"
-          >
-            View All Collection
+        <Reveal className="text-center mt-16">
+          <Link href="/products" className="btn-ghost text-obsidian">
+            View All Fragrances
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </Link>
-        </div>
+        </Reveal>
       </div>
     </section>
   );

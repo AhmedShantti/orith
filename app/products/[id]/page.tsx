@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { useLang } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
 import { products } from "@/data/products";
+import Emblem from "@/components/Emblem";
 
 export default function ProductDetailsPage() {
   const params = useParams();
@@ -19,7 +20,7 @@ export default function ProductDetailsPage() {
     return (
       <div className="pt-32 pb-24 min-h-screen bg-ivory flex items-center justify-center">
         <div className="text-center">
-          <p className="font-display text-3xl font-light text-obsidian/40" style={{ fontFamily: "var(--font-cormorant)" }}>
+          <p className="font-display text-3xl font-light text-obsidian/40" style={{ fontFamily: "var(--font-cinzel)" }}>
             Product not found
           </p>
           <Link href="/products" className="mt-6 inline-block text-gold text-sm tracking-widest uppercase font-body hover:underline">
@@ -61,30 +62,27 @@ export default function ProductDetailsPage() {
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           {/* Image */}
           <div className="relative">
-            <div className="relative aspect-[3/4] rounded-3xl overflow-hidden bg-gradient-to-br from-champagne/40 via-ivory to-beige/60 shadow-luxury-lg flex items-center justify-center">
+            <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-b from-[#FBF8F2] to-[#EFE7DB] border border-obsidian/10 flex items-center justify-center">
+              <div className="absolute inset-5 border border-obsidian/10 pointer-events-none" />
               <Image
                 src={product.image}
                 alt={name}
                 fill
-                className="object-contain p-10"
+                className="object-contain p-12"
                 priority
               />
               {/* Badge */}
               {product.badge && (
-                <div className={`absolute top-6 ${lang === "ar" ? "right-6" : "left-6"} px-4 py-2 rounded-full text-xs tracking-[0.1em] uppercase font-body font-medium ${
-                  product.badge === "bestseller" ? "bg-gold text-white" :
-                  product.badge === "new" ? "bg-obsidian text-white" :
-                  product.badge === "limited" ? "bg-rose-deep text-white" : "bg-gold text-white"
+                <div className={`absolute top-5 ${lang === "ar" ? "right-5" : "left-5"} eyebrow text-[9px] px-3 py-1.5 ${
+                  product.badge === "limited" ? "bg-crimson text-ivory" : "bg-obsidian text-ivory"
                 }`}>
                   {product.badge === "bestseller" ? t.badges.bestseller :
                    product.badge === "new" ? t.badges.new :
                    product.badge === "limited" ? t.badges.limited : t.badges.offer}
                 </div>
               )}
+              <Emblem size={22} className="absolute bottom-5 right-5 text-obsidian/25" />
             </div>
-
-            {/* Decorative accent */}
-            <div className="absolute -z-10 -bottom-6 -right-6 w-64 h-64 rounded-full bg-gold/8 blur-2xl" />
           </div>
 
           {/* Content */}
@@ -103,7 +101,7 @@ export default function ProductDetailsPage() {
             <div className="flex items-baseline gap-3 mb-8">
               <span
                 className="font-display text-4xl font-light text-obsidian"
-                style={{ fontFamily: "var(--font-cormorant)" }}
+                style={{ fontFamily: "var(--font-cinzel)" }}
               >
                 {product.price.toLocaleString()}
               </span>
@@ -135,10 +133,10 @@ export default function ProductDetailsPage() {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`px-6 py-3 rounded-full text-sm tracking-wider uppercase font-body border-2 transition-all duration-300 ${
+                    className={`px-7 py-3.5 eyebrow text-[10px] border transition-all duration-300 ${
                       selectedSize === size
-                        ? "border-gold bg-gold/10 text-gold font-medium"
-                        : "border-obsidian/15 text-obsidian/60 hover:border-gold/40 hover:text-gold"
+                        ? "border-crimson bg-crimson text-ivory"
+                        : "border-obsidian/20 text-obsidian/60 hover:border-crimson hover:text-crimson"
                     }`}
                   >
                     {size}
@@ -150,17 +148,16 @@ export default function ProductDetailsPage() {
             {/* Add to cart */}
             <button
               onClick={handleAdd}
-              className={`w-full py-5 rounded-full text-sm tracking-[0.2em] uppercase font-body font-medium mb-4 transition-all duration-300 ${
-                added ? "bg-green-500 text-white scale-[0.99]" : "btn-gold"
-              }`}
+              className={`w-full mb-4 transition-all duration-300 ${added ? "" : ""}`}
             >
-              {added ? "✓ Added to Cart!" : t.products.addToCart}
+              <span className={`block w-full py-5 text-center eyebrow text-[11px] border transition-all duration-300 ${
+                added ? "bg-obsidian border-obsidian text-ivory" : "bg-crimson border-crimson text-ivory hover:bg-crimson-dark hover:border-crimson-dark"
+              }`}>
+                {added ? "✓ Added to Cart" : t.products.addToCart}
+              </span>
             </button>
 
-            <Link
-              href="/cart"
-              className="w-full py-4 rounded-full text-sm tracking-[0.2em] uppercase font-body font-medium border border-obsidian/20 text-obsidian/60 hover:border-gold hover:text-gold transition-all duration-300 flex items-center justify-center"
-            >
+            <Link href="/cart" className="btn-ghost text-obsidian w-full">
               {t.nav.cart} →
             </Link>
 
@@ -183,10 +180,10 @@ export default function ProductDetailsPage() {
                   ].map((group) => (
                     <div
                       key={group.label}
-                      className="bg-white rounded-2xl p-4 text-center shadow-card"
+                      className="bg-[#FBF8F2] border border-obsidian/10 p-5 text-center"
                     >
-                      <div className="text-gold/60 text-lg mb-2">{group.icon}</div>
-                      <p className="text-[10px] tracking-[0.3em] uppercase font-body text-obsidian/40 mb-3">
+                      <div className="text-crimson/60 text-lg mb-2">{group.icon}</div>
+                      <p className="eyebrow text-[9px] text-obsidian/40 mb-3">
                         {group.label}
                       </p>
                       <div className="flex flex-col gap-1">
@@ -216,17 +213,17 @@ export default function ProductDetailsPage() {
                 <div className="gold-line" />
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-obsidian/10 border border-obsidian/10">
               {related.map((p) => (
-                <Link key={p.id} href={`/products/${p.id}`} className="group product-card block bg-white rounded-3xl overflow-hidden shadow-card">
-                  <div className="relative aspect-[3/4] bg-gradient-to-br from-champagne/40 via-ivory to-beige/60 overflow-hidden flex items-center justify-center">
-                    <Image src={p.image} alt={lang === "ar" ? p.nameAr : p.nameEn} fill className="card-img object-contain p-6" />
+                <Link key={p.id} href={`/products/${p.id}`} className="group tile block bg-ivory">
+                  <div className="relative aspect-[3/4] bg-gradient-to-b from-[#FBF8F2] to-[#EFE7DB] overflow-hidden flex items-center justify-center">
+                    <Image src={p.image} alt={lang === "ar" ? p.nameAr : p.nameEn} fill className="tile-img object-contain p-8" />
                   </div>
                   <div className="p-5">
-                    <h4 className="product-name text-xl text-obsidian group-hover:text-gold transition-colors">
+                    <h4 className="product-name text-xl text-obsidian group-hover:text-crimson transition-colors">
                       {lang === "ar" ? p.nameAr : p.nameEn}
                     </h4>
-                    <p className="font-display text-lg font-light text-obsidian/60 mt-1" style={{ fontFamily: "var(--font-cormorant)" }}>
+                    <p className="display text-lg text-obsidian/60 mt-1" style={{ fontWeight: 500 }}>
                       {p.price.toLocaleString()} {t.details.inEgp}
                     </p>
                   </div>

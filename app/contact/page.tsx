@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useLang } from "@/context/LanguageContext";
+import Emblem from "@/components/Emblem";
 
 const WHATSAPP = "+201000000000";
 const PHONE = "+20 100 000 0000";
@@ -64,24 +65,16 @@ export default function ContactPage() {
   ];
 
   return (
-    <div className="page-transition pt-24 pb-24 min-h-screen bg-ivory">
+    <div className="page-transition pt-32 pb-28 min-h-screen bg-ivory">
       {/* Header */}
-      <div className="bg-gradient-to-b from-beige/80 to-transparent py-16 mb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            <div className="gold-line" />
-            <span className="text-xs tracking-[0.4em] uppercase text-gold font-body font-light">
-              Contact
-            </span>
-            <div className="gold-line" />
-          </div>
-          <h1
-            className="font-display text-4xl sm:text-5xl lg:text-6xl font-light text-obsidian"
-            style={{ fontFamily: "var(--font-cormorant)" }}
-          >
+      <div className="max-w-[1500px] mx-auto px-6 lg:px-10 mb-16">
+        <div className="text-center border-b border-obsidian/12 pb-12">
+          <div className="flex justify-center mb-6"><Emblem size={34} className="text-crimson" /></div>
+          <p className="eyebrow text-crimson mb-5">Contact</p>
+          <h1 className="display text-5xl sm:text-6xl lg:text-7xl text-obsidian" style={{ fontWeight: 600 }}>
             {t.contact.title}
           </h1>
-          <p className="font-body text-obsidian/50 mt-3 text-sm sm:text-base">
+          <p className="accent-serif text-obsidian/55 text-lg mt-4">
             {t.contact.subtitle}
           </p>
         </div>
@@ -105,10 +98,10 @@ export default function ContactPage() {
                   href={item.href}
                   target={item.href.startsWith("http") ? "_blank" : undefined}
                   rel="noopener noreferrer"
-                  className="flex items-center gap-5 p-5 rounded-2xl bg-white shadow-card hover:shadow-card-hover transition-all duration-300 group"
+                  className="flex items-center gap-5 p-5 bg-[#FBF8F2] border border-obsidian/12 hover:border-crimson/40 transition-all duration-300 group"
                 >
-                  <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-white transition-all duration-300 flex-shrink-0">
-                    <span className="text-xs">✦</span>
+                  <div className="w-11 h-11 bg-crimson/8 flex items-center justify-center text-crimson group-hover:bg-crimson group-hover:text-ivory transition-all duration-300 flex-shrink-0">
+                    <Emblem size={18} />
                   </div>
                   <div>
                     <p className="text-[10px] tracking-[0.3em] uppercase font-body text-obsidian/40 mb-0.5">
@@ -132,7 +125,7 @@ export default function ContactPage() {
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`flex items-center gap-3 px-5 py-4 rounded-2xl bg-gradient-to-r ${s.color} text-white hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300`}
+                    className={`flex items-center gap-3 px-5 py-4 bg-gradient-to-r ${s.color} text-white hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300`}
                   >
                     {s.icon}
                     <span className="text-sm font-body tracking-wider">{s.name}</span>
@@ -144,8 +137,8 @@ export default function ContactPage() {
 
           {/* Right: WhatsApp CTA + quick message */}
           <div>
-            <div className="bg-obsidian rounded-3xl p-10 text-white mb-6 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-gold/10 blur-2xl pointer-events-none" />
+            <div className="bg-silk rounded-none p-10 text-white mb-6 relative overflow-hidden">
+              <span className="section-watermark" style={{ color: "transparent", WebkitTextStroke: "1px rgba(246,242,235,0.05)" }} aria-hidden>ORITH</span>
               <div className="relative z-10">
                 <div className="w-16 h-16 rounded-full bg-[#25D366] flex items-center justify-center mb-6">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
@@ -154,7 +147,7 @@ export default function ContactPage() {
                 </div>
                 <h3
                   className="font-display text-3xl font-light text-white mb-4"
-                  style={{ fontFamily: "var(--font-cormorant)" }}
+                  style={{ fontFamily: "var(--font-cinzel)" }}
                 >
                   Order via WhatsApp
                 </h3>
@@ -165,7 +158,7 @@ export default function ContactPage() {
                   href={`https://wa.me/${WHATSAPP.replace("+", "")}?text=${encodeURIComponent("Hello! I'm interested in your fragrances.")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white px-8 py-4 rounded-full text-sm tracking-wider uppercase font-body font-medium transition-all duration-300 hover:shadow-[0_8px_24px_rgba(37,211,102,0.3)]"
+                  className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#20bd5c] text-white px-8 py-4 eyebrow text-[10px] transition-all duration-300 hover:shadow-[0_8px_24px_rgba(37,211,102,0.3)]"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
@@ -176,11 +169,8 @@ export default function ContactPage() {
             </div>
 
             {/* Working hours card */}
-            <div className="glass-card rounded-3xl p-8 border border-gold/20">
-              <h4
-                className="font-display text-2xl font-light text-obsidian mb-6"
-                style={{ fontFamily: "var(--font-cormorant)" }}
-              >
+            <div className="bg-[#FBF8F2] border border-obsidian/12 p-8">
+              <h4 className="display text-2xl text-obsidian mb-6" style={{ fontWeight: 500 }}>
                 {t.contact.hours}
               </h4>
               {[

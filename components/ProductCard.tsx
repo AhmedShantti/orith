@@ -26,13 +26,6 @@ export default function ProductCard({ product, delay = 0 }: ProductCardProps) {
     setTimeout(() => setAdded(false), 1500);
   };
 
-  const badgeColors: Record<string, string> = {
-    bestseller: "bg-gold text-white",
-    new: "bg-obsidian text-white",
-    limited: "bg-rose-deep text-white",
-    offer: "bg-gold-dark text-white",
-  };
-
   const badgeLabels: Record<string, string> = {
     bestseller: t.badges.bestseller,
     new: t.badges.new,
@@ -41,89 +34,89 @@ export default function ProductCard({ product, delay = 0 }: ProductCardProps) {
   };
 
   return (
-    <div
-      className="product-card group bg-white rounded-3xl overflow-hidden shadow-card cursor-pointer"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      <Link href={`/products/${product.id}`} className="block">
+    <div className="tile group flex flex-col">
+      <Link href={`/products/${product.id}`} className="block relative">
         {/* Image */}
-        <div className="relative overflow-hidden aspect-[3/4] bg-gradient-to-br from-champagne/40 via-ivory to-beige/60 flex items-center justify-center p-6">
+        <div className="relative overflow-hidden aspect-[3/4] bg-gradient-to-b from-[#FBF8F2] to-[#EFE7DB] flex items-center justify-center">
           <Image
             src={product.image}
             alt={name}
             fill
-            className="card-img object-contain p-6"
+            className="tile-img object-contain p-8"
           />
-          {/* Overlay on hover */}
-          <div className="absolute inset-0 bg-obsidian/0 group-hover:bg-obsidian/10 transition-colors duration-500" />
 
-          {/* Badge */}
+          {/* Badge — minimal editorial tag */}
           {product.badge && (
-            <div
-              className={`absolute top-4 ${lang === "ar" ? "right-4" : "left-4"} px-3 py-1 rounded-full text-[10px] tracking-[0.1em] uppercase font-body font-medium ${badgeColors[product.badge]}`}
+            <span
+              className={`absolute top-4 ${lang === "ar" ? "right-4" : "left-4"} eyebrow text-[8px] px-2.5 py-1 bg-obsidian text-ivory`}
             >
               {badgeLabels[product.badge]}
-            </div>
+            </span>
           )}
 
-          {/* Quick view hint */}
-          <div className="absolute bottom-4 left-4 right-4 flex justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
-            <span className="bg-white/90 backdrop-blur-sm text-obsidian text-xs tracking-widest uppercase font-body px-4 py-2 rounded-full">
-              {t.products.viewDetails}
-            </span>
+          {/* View overlay bar */}
+          <div className="absolute inset-x-0 bottom-0 translate-y-full group-hover:translate-y-0 transition-transform duration-500 bg-obsidian/85 backdrop-blur-sm py-3 text-center">
+            <span className="eyebrow text-ivory/90 text-[9px]">{t.products.viewDetails}</span>
           </div>
         </div>
       </Link>
 
       {/* Content */}
-      <div className="p-5">
+      <div className="flex flex-col flex-1 px-5 pt-5 pb-5">
+        <p className="eyebrow text-crimson text-[9px] mb-2">{product.category}</p>
         <Link href={`/products/${product.id}`}>
-          <h3 className="product-name text-2xl text-obsidian mb-1 hover:text-gold transition-colors">
+          <h3 className="product-name text-2xl text-obsidian leading-tight hover:text-crimson transition-colors">
             {name}
           </h3>
         </Link>
-        <p className="text-xs font-body text-obsidian/50 line-clamp-2 mb-4 leading-relaxed">
-          {lang === "ar" ? product.descriptionAr : product.descriptionEn}
-        </p>
 
-        {/* Sizes */}
-        <div className="flex gap-2 mb-4 flex-wrap">
-          {product.sizes.map((size) => (
-            <button
-              key={size}
-              onClick={() => setSelectedSize(size)}
-              className={`px-2.5 py-1 rounded-full text-[10px] tracking-wider uppercase font-body border transition-all duration-200 ${
-                selectedSize === size
-                  ? "border-gold bg-gold/10 text-gold"
-                  : "border-obsidian/15 text-obsidian/50 hover:border-gold/40"
-              }`}
-            >
-              {size}
-            </button>
-          ))}
-        </div>
+        {/* Sizes (only when more than one) */}
+        {product.sizes.length > 1 && (
+          <div className="flex gap-3 mt-3">
+            {product.sizes.map((size) => (
+              <button
+                key={size}
+                onClick={() => setSelectedSize(size)}
+                className={`eyebrow text-[9px] pb-1 border-b transition-colors ${
+                  selectedSize === size
+                    ? "border-crimson text-crimson"
+                    : "border-transparent text-obsidian/40 hover:text-obsidian"
+                }`}
+              >
+                {size}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {/* Price + Add */}
-        <div className="flex items-center justify-between">
-          <span
-            className="font-display text-2xl font-light text-obsidian"
-            style={{ fontFamily: "var(--font-cormorant)" }}
-          >
+        {/* Price + add */}
+        <div className="mt-auto pt-5 flex items-end justify-between">
+          <span className="display text-2xl text-obsidian" style={{ fontWeight: 500 }}>
             {product.price.toLocaleString()}
-            <span className="text-sm text-obsidian/40 font-body ms-1">
+            <span className="font-body text-[11px] text-obsidian/40 ms-1.5 tracking-widest">
               {t.details.inEgp}
             </span>
           </span>
 
           <button
             onClick={handleAdd}
-            className={`px-5 py-2.5 rounded-full text-xs tracking-[0.1em] uppercase font-body font-medium transition-all duration-300 ${
+            aria-label={t.products.addToCart}
+            className={`w-10 h-10 flex items-center justify-center border transition-all duration-300 ${
               added
-                ? "bg-green-500 text-white scale-95"
-                : "btn-gold"
+                ? "bg-obsidian border-obsidian text-ivory"
+                : "border-obsidian/25 text-obsidian hover:bg-crimson hover:border-crimson hover:text-ivory"
             }`}
           >
-            {added ? "✓" : t.products.addToCart}
+            {added ? (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
