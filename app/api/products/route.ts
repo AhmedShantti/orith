@@ -1,122 +1,85 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/middleware";
-import { ApiResponse, PaginatedResponse, BackendProduct } from "@/types";
+import { NextResponse } from "next/server";
+import { getAllProducts, addProduct } from "@/lib/productStore";
+import type { Product } from "@/types";
 
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
-    const category = searchParams.get("category");
-    const search = searchParams.get("search");
-    const sort = searchParams.get("sort") || "createdAt";
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
+const VALID_CATEGORIES = ["oriental", "floral", "woody", "fresh", "powdery"];
+const VALID_BADGES = ["bestseller", "new", "limited", "offer"];
 
-    const skip = (page - 1) * limit;
+// GET /api/products — full catalogue (static + admin-added), filterable
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const category = searchParams.get("category");
+  const q = searchParams.get("q")?.toLowerCase().trim();
 
-    const where: Record<string, unknown> = {};
-    if (category) where.category = category;
-    if (search) {
-      where.OR = [
-        { nameEn: { contains: search, mode: "insensitive" } },
-        { nameAr: { contains: search, mode: "insensitive" } },
-        { descriptionEn: { contains: search, mode: "insensitive" } },
-      ];
-    }
+  let result = await getAllProducts();
 
-    const [products, total] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { [sort]: "desc" },
-      }),
-      prisma.product.count({ where }),
-    ]);
-
-    const response: PaginatedResponse<BackendProduct> = {
-      success: true,
-      data: products,
-      pagination: {
-        total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit),
-      },
-    };
-
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error("Error fetching products:", error);
-    const response: ApiResponse<null> = {
-      success: false,
-      data: null,
-      error: "Internal Server Error",
-      message: "Failed to fetch products",
-    };
-    return NextResponse.json(response, { status: 500 });
+  if (category && category !== "all") {
+    result = result.filter((p) => p.category === category);
   }
+  if (q) {
+    result = result.filter(
+      (p) =>
+        p.nameEn.toLowerCase().includes(q) ||
+        p.nameAr.includes(q) ||
+        p.descriptionEn.toLowerCase().includes(q)
+    );
+  }
+
+  return NextResponse.json({ count: result.length, products: result });
 }
 
-export async function POST(request: NextRequest) {
+// POST /api/products — create a new product (appears on the website immediately)
+export async function POST(request: Request) {
+  let body: Record<string, unknown>;
   try {
-    const { user, response: authResponse } = await requireAdmin(request);
-    if (authResponse) return authResponse;
-
-    const body = await request.json();
-    const {
-      nameEn, nameAr, descriptionEn, descriptionAr,
-      price, originalPrice, image, sizes, category,
-      badge, notesTop, notesHeart, notesBase, stock,
-    } = body;
-
-    if (
-      !nameEn || !nameAr || !descriptionEn || !descriptionAr ||
-      price === undefined || !image || !category || stock === undefined
-    ) {
-      const response: ApiResponse<null> = {
-        success: false,
-        data: null,
-        error: "Bad Request",
-        message: "Missing required fields",
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    const product = await prisma.product.create({
-      data: {
-        nameEn,
-        nameAr,
-        descriptionEn,
-        descriptionAr,
-        price: parseFloat(price),
-        originalPrice: originalPrice ? parseFloat(originalPrice) : null,
-        image,
-        sizes: sizes || [],
-        category,
-        badge: badge || null,
-        notesTop: notesTop || [],
-        notesHeart: notesHeart || [],
-        notesBase: notesBase || [],
-        stock: parseInt(stock),
-      },
-    });
-
-    const apiResponse: ApiResponse<BackendProduct> = {
-      success: true,
-      data: product,
-      message: "Product created successfully",
-    };
-
-    return NextResponse.json(apiResponse, { status: 201 });
-  } catch (error) {
-    console.error("Error creating product:", error);
-    const response: ApiResponse<null> = {
-      success: false,
-      data: null,
-      error: "Internal Server Error",
-      message: "Failed to create product",
-    };
-    return NextResponse.json(response, { status: 500 });
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
+
+  const nameEn = String(body.nameEn ?? "").trim();
+  const nameAr = String(body.nameAr ?? "").trim();
+  const price = Number(body.price);
+  const category = String(body.category ?? "").trim();
+
+  if (!nameEn || !nameAr) {
+    return NextResponse.json(
+      { error: "Both English and Arabic names are required" },
+      { status: 400 }
+    );
+  }
+  if (!Number.isFinite(price) || price <= 0) {
+    return NextResponse.json(
+      { error: "A valid price is required" },
+      { status: 400 }
+    );
+  }
+  if (!VALID_CATEGORIES.includes(category)) {
+    return NextResponse.json({ error: "Invalid category" }, { status: 400 });
+  }
+
+  const sizes =
+    Array.isArray(body.sizes) && body.sizes.length
+      ? body.sizes.map((s) => String(s).trim()).filter(Boolean)
+      : ["100ml"];
+
+  const badge =
+    typeof body.badge === "string" && VALID_BADGES.includes(body.badge)
+      ? (body.badge as Product["badge"])
+      : undefined;
+
+  const input: Omit<Product, "id"> = {
+    nameEn,
+    nameAr,
+    descriptionEn: String(body.descriptionEn ?? "").trim(),
+    descriptionAr: String(body.descriptionAr ?? "").trim(),
+    price: Math.round(price),
+    image: String(body.image ?? "/products/bottle-1.png").trim(),
+    sizes,
+    category,
+    ...(badge ? { badge } : {}),
+  };
+
+  const product = await addProduct(input);
+  return NextResponse.json({ product }, { status: 201 });
 }

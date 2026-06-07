@@ -18,6 +18,12 @@ tsconfig.tsbuildinfo
 .DS_Store
 *.pem
 
+# runtime data stores (created by the API on first write)
+data/orders.json
+data/custom-products.json
+# admin-uploaded product images
+public/products/upload-*
+
 # debug
 npm-debug.log*
 yarn-debug.log*

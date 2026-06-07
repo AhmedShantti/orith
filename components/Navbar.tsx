@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLang } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
+import Emblem from "./Emblem";
 
 export default function Navbar() {
   const { t, lang, setLang, dir } = useLang();
@@ -14,13 +15,13 @@ export default function Navbar() {
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
+    onScroll();
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
-    if (menuOpen) document.body.style.overflow = "hidden";
-    else document.body.style.overflow = "";
+    document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
@@ -34,147 +35,132 @@ export default function Navbar() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
+  // Over the dark hero (home, not scrolled) → light chrome. Otherwise dark.
+  const onHero = pathname === "/" && !scrolled;
+  const fg = onHero ? "text-ivory" : "text-obsidian";
+  const fgDim = onHero ? "text-ivory/65" : "text-obsidian/60";
+
   return (
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-ivory/95 navbar-blur shadow-[0_2px_20px_rgba(0,0,0,0.06)]"
+            ? "bg-ivory/92 navbar-blur border-b border-obsidian/10"
             : "bg-transparent"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-18 py-4">
+        <div className="max-w-[1500px] mx-auto px-6 lg:px-10">
+          <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link href="/" className="flex flex-col items-start group">
-              <span
-                className="font-display text-2xl sm:text-3xl font-light tracking-[0.2em] text-obsidian group-hover:text-gold transition-colors duration-300"
-                style={{ fontFamily: "var(--font-cormorant)" }}
-              >
-                ORITH
-              </span>
-              <span className="text-[9px] tracking-[0.35em] text-gold/80 uppercase font-body font-light -mt-1">
-                Luxury Perfumery
+            <Link href="/" className="flex items-center gap-3 group">
+              <Emblem size={26} className={`${onHero ? "text-ivory" : "text-crimson"} transition-colors duration-500 flex-shrink-0`} />
+              <span className="flex flex-col items-start leading-none">
+                <span
+                  className={`display text-xl sm:text-2xl tracking-[0.28em] ${fg} transition-colors duration-500`}
+                  style={{ fontWeight: 600 }}
+                >
+                  ORITH
+                </span>
+                <span className={`eyebrow text-[7px] mt-1 ${fgDim} transition-colors duration-500`}>
+                  Maison de Parfum
+                </span>
               </span>
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-8">
-              {links.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm tracking-widest uppercase font-body font-light transition-all duration-300 relative group ${
-                    isActive(link.href)
-                      ? "text-gold"
-                      : "text-obsidian/70 hover:text-gold"
-                  }`}
-                >
-                  {link.label}
-                  <span
-                    className={`absolute -bottom-1 left-0 h-px bg-gold transition-all duration-300 ${
-                      isActive(link.href) ? "w-full" : "w-0 group-hover:w-full"
-                    }`}
-                  />
-                </Link>
-              ))}
+            <nav className="hidden md:flex items-center gap-10">
+              {links.map((link) => {
+                const active = isActive(link.href);
+                const linkColor = active
+                  ? onHero ? "text-ivory" : "text-crimson"
+                  : onHero ? "text-ivory/65 hover:text-ivory" : "text-obsidian/60 hover:text-crimson";
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`eyebrow text-[10px] relative group transition-colors duration-300 ${linkColor}`}
+                  >
+                    {link.label}
+                    <span
+                      className={`absolute -bottom-2 left-0 h-px ${onHero ? "bg-ivory" : "bg-crimson"} transition-all duration-300 ${
+                        active ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
+                  </Link>
+                );
+              })}
             </nav>
 
             {/* Right side */}
-            <div className="flex items-center gap-4">
-              {/* Language Switcher */}
+            <div className="flex items-center gap-5">
               <button
                 onClick={() => setLang(lang === "en" ? "ar" : "en")}
-                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gold/30 text-xs tracking-widest uppercase font-body text-gold hover:bg-gold hover:text-white transition-all duration-300"
+                className={`hidden md:inline-flex eyebrow text-[10px] px-3 py-2 border transition-all duration-300 ${
+                  onHero
+                    ? "border-ivory/30 text-ivory hover:bg-ivory hover:text-obsidian"
+                    : "border-obsidian/25 text-obsidian hover:bg-crimson hover:border-crimson hover:text-ivory"
+                }`}
               >
                 {lang === "en" ? "عربي" : "EN"}
               </button>
 
-              {/* Cart */}
-              <Link
-                href="/cart"
-                className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-gold/10 transition-colors duration-300 group"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  className="text-obsidian/70 group-hover:text-gold transition-colors"
-                >
+              <Link href="/cart" className={`relative flex items-center justify-center w-9 h-9 ${fg} transition-colors duration-500 hover:text-crimson`}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3">
                   <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
                   <line x1="3" y1="6" x2="21" y2="6" />
                   <path d="M16 10a4 4 0 01-8 0" />
                 </svg>
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gold text-white text-[10px] font-body font-medium flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-crimson text-ivory text-[10px] font-body flex items-center justify-center">
                     {totalItems > 9 ? "9+" : totalItems}
                   </span>
                 )}
               </Link>
 
-              {/* Burger */}
               <button
-                className="md:hidden flex flex-col gap-1.5 p-2 group"
+                className="md:hidden flex flex-col gap-1.5 p-1"
                 onClick={() => setMenuOpen(true)}
                 aria-label="Open menu"
               >
-                <span className="w-5 h-px bg-obsidian/70 group-hover:bg-gold transition-colors" />
-                <span className="w-4 h-px bg-obsidian/70 group-hover:bg-gold transition-colors" />
-                <span className="w-5 h-px bg-obsidian/70 group-hover:bg-gold transition-colors" />
+                <span className={`w-6 h-px ${onHero ? "bg-ivory" : "bg-obsidian"} transition-colors`} />
+                <span className={`w-6 h-px ${onHero ? "bg-ivory" : "bg-obsidian"} transition-colors`} />
+                <span className={`w-4 h-px ${onHero ? "bg-ivory" : "bg-obsidian"} transition-colors`} />
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu */}
       {menuOpen && (
-        <div className="fixed inset-0 z-50 mobile-overlay">
+        <div className="fixed inset-0 z-50 mobile-overlay md:hidden">
+          <div className="absolute inset-0 bg-obsidian/50" onClick={() => setMenuOpen(false)} />
           <div
-            className="absolute inset-0 bg-obsidian/40"
-            onClick={() => setMenuOpen(false)}
-          />
-          <div
-            className={`absolute top-0 bottom-0 w-[80vw] max-w-sm bg-ivory flex flex-col shadow-2xl transition-transform duration-400 ${
-              dir === "rtl" ? "right-0" : "left-0"
-            }`}
+            className={`absolute top-0 bottom-0 w-[84vw] max-w-sm bg-ivory flex flex-col ${dir === "rtl" ? "right-0" : "left-0"}`}
             style={{ animation: "slideDown 0.4s ease" }}
           >
-            {/* Mobile header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-gold/20">
-              <span
-                className="font-display text-2xl font-light tracking-[0.2em] text-obsidian"
-                style={{ fontFamily: "var(--font-cormorant)" }}
-              >
-                ORITH
+            <div className="flex items-center justify-between px-6 py-6 border-b border-obsidian/10">
+              <span className="flex items-center gap-3">
+                <Emblem size={22} className="text-crimson" />
+                <span className="display text-2xl tracking-[0.22em] text-obsidian" style={{ fontWeight: 600 }}>ORITH</span>
               </span>
-              <button
-                onClick={() => setMenuOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gold/10 transition-colors"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
+              <button onClick={() => setMenuOpen(false)} className="text-obsidian/60 hover:text-crimson">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </div>
 
-            {/* Links */}
-            <nav className="flex flex-col px-6 py-8 gap-2 flex-1">
-              {links.map((link, i) => (
+            <nav className="flex flex-col px-6 py-8 flex-1">
+              {links.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setMenuOpen(false)}
-                  className={`text-lg font-body font-light tracking-wider uppercase py-3 border-b border-gold/10 transition-colors duration-300 ${
-                    isActive(link.href)
-                      ? "text-gold"
-                      : "text-obsidian/70 hover:text-gold"
+                  className={`display text-2xl py-4 border-b border-obsidian/8 transition-colors ${
+                    isActive(link.href) ? "text-crimson" : "text-obsidian hover:text-crimson"
                   }`}
-                  style={{ animationDelay: `${i * 0.05}s` }}
+                  style={{ fontWeight: 500 }}
                 >
                   {link.label}
                 </Link>
@@ -182,22 +168,20 @@ export default function Navbar() {
               <Link
                 href="/cart"
                 onClick={() => setMenuOpen(false)}
-                className="text-lg font-body font-light tracking-wider uppercase py-3 border-b border-gold/10 text-obsidian/70 hover:text-gold transition-colors flex items-center gap-2"
+                className="display text-2xl py-4 border-b border-obsidian/8 text-obsidian hover:text-crimson flex items-center gap-3"
+                style={{ fontWeight: 500 }}
               >
                 {t.nav.cart}
                 {totalItems > 0 && (
-                  <span className="w-5 h-5 rounded-full bg-gold text-white text-[10px] flex items-center justify-center">
-                    {totalItems}
-                  </span>
+                  <span className="min-w-[20px] h-5 px-1 bg-crimson text-ivory text-[10px] font-body flex items-center justify-center">{totalItems}</span>
                 )}
               </Link>
             </nav>
 
-            {/* Language + social */}
-            <div className="px-6 py-6 border-t border-gold/20">
+            <div className="px-6 py-6 border-t border-obsidian/10">
               <button
                 onClick={() => { setLang(lang === "en" ? "ar" : "en"); setMenuOpen(false); }}
-                className="w-full py-3 rounded-full border border-gold text-gold text-sm tracking-widest uppercase font-body hover:bg-gold hover:text-white transition-all duration-300"
+                className="btn-ghost text-obsidian w-full"
               >
                 {lang === "en" ? "العربية" : "English"}
               </button>

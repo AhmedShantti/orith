@@ -1,126 +1,67 @@
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth, requireAdmin } from "@/lib/middleware";
-import { ApiResponse, Order } from "@/types";
+import { NextResponse } from "next/server";
+import { promises as fs } from "fs";
+import path from "path";
+import type { Order } from "../route";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+const ORDERS_PATH = path.join(process.cwd(), "data", "orders.json");
+const STATUSES: Order["status"][] = [
+  "pending",
+  "paid",
+  "shipped",
+  "delivered",
+  "cancelled",
+];
+
+async function readOrders(): Promise<Order[]> {
   try {
-    const { user, response: authResponse } = await requireAuth(request);
-    if (authResponse) return authResponse;
-
-    const order = await prisma.order.findUnique({
-      where: { id: params.id },
-      include: { items: { include: { product: true } }, user: true },
-    });
-
-    if (!order) {
-      const response: ApiResponse<null> = {
-        success: false,
-        data: null,
-        error: "Not Found",
-        message: "Order not found",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    if (order.userId !== user!.userId && user!.role !== "ADMIN") {
-      const response: ApiResponse<null> = {
-        success: false,
-        data: null,
-        error: "Forbidden",
-        message: "You cannot access this order",
-      };
-      return NextResponse.json(response, { status: 403 });
-    }
-
-    const apiResponse: ApiResponse<Order> = {
-      success: true,
-      data: order,
-    };
-
-    return NextResponse.json(apiResponse);
-  } catch (error) {
-    console.error("Error fetching order:", error);
-    const response: ApiResponse<null> = {
-      success: false,
-      data: null,
-      error: "Internal Server Error",
-      message: "Failed to fetch order",
-    };
-    return NextResponse.json(response, { status: 500 });
+    return JSON.parse(await fs.readFile(ORDERS_PATH, "utf-8")) as Order[];
+  } catch {
+    return [];
   }
 }
 
-export async function PUT(
-  request: NextRequest,
+async function writeOrders(orders: Order[]): Promise<void> {
+  await fs.writeFile(ORDERS_PATH, JSON.stringify(orders, null, 2), "utf-8");
+}
+
+// PATCH /api/orders/:id — update an order's status
+export async function PATCH(
+  request: Request,
   { params }: { params: { id: string } }
 ) {
+  let body: Record<string, unknown>;
   try {
-    const { user, response: authResponse } = await requireAdmin(request);
-    if (authResponse) return authResponse;
-
-    const body = await request.json();
-    const { status } = body;
-
-    if (!status) {
-      const response: ApiResponse<null> = {
-        success: false,
-        data: null,
-        error: "Bad Request",
-        message: "Missing required field: status",
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    const validStatuses = ["PENDING", "PROCESSING", "SHIPPED", "DELIVERED"];
-    if (!validStatuses.includes(status)) {
-      const response: ApiResponse<null> = {
-        success: false,
-        data: null,
-        error: "Bad Request",
-        message: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
-      };
-      return NextResponse.json(response, { status: 400 });
-    }
-
-    const order = await prisma.order.findUnique({
-      where: { id: params.id },
-    });
-
-    if (!order) {
-      const response: ApiResponse<null> = {
-        success: false,
-        data: null,
-        error: "Not Found",
-        message: "Order not found",
-      };
-      return NextResponse.json(response, { status: 404 });
-    }
-
-    const updatedOrder = await prisma.order.update({
-      where: { id: params.id },
-      data: { status },
-      include: { items: { include: { product: true } }, user: true },
-    });
-
-    const apiResponse: ApiResponse<Order> = {
-      success: true,
-      data: updatedOrder,
-      message: "Order status updated",
-    };
-
-    return NextResponse.json(apiResponse);
-  } catch (error) {
-    console.error("Error updating order:", error);
-    const response: ApiResponse<null> = {
-      success: false,
-      data: null,
-      error: "Internal Server Error",
-      message: "Failed to update order",
-    };
-    return NextResponse.json(response, { status: 500 });
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
+
+  const status = String(body.status ?? "") as Order["status"];
+  if (!STATUSES.includes(status)) {
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  }
+
+  const orders = await readOrders();
+  const order = orders.find((o) => o.id === params.id);
+  if (!order) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
+  order.status = status;
+  await writeOrders(orders);
+  return NextResponse.json({ order });
+}
+
+// DELETE /api/orders/:id — remove an order
+export async function DELETE(
+  _request: Request,
+  { params }: { params: { id: string } }
+) {
+  const orders = await readOrders();
+  const next = orders.filter((o) => o.id !== params.id);
+  if (next.length === orders.length) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+  await writeOrders(next);
+  return NextResponse.json({ ok: true });
 }

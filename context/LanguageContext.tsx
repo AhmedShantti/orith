@@ -105,9 +105,9 @@ const translations: Record<Language, Translations> = {
       contact: "Contact",
     },
     hero: {
-      tagline: "Luxury Perfumery",
-      headline: "Wear Your\nSignature Scent",
-      sub: "Discover handcrafted fragrances that tell your story. Each bottle is a journey into the art of luxury perfumery.",
+      tagline: "Maison de Parfum",
+      headline: "Timeless by Design,\nDefined by Essence",
+      sub: "At ORITH, fragrance is more than a scent — it is a statement of quiet elegance, crafted with precision and timeless sophistication.",
       cta: "Explore Collection",
       ctaOffers: "View Offers",
     },
@@ -165,7 +165,7 @@ const translations: Record<Language, Translations> = {
     },
     footer: {
       rights: "All rights reserved.",
-      tagline: "The art of luxury fragrance",
+      tagline: "Timeless by design, defined by essence",
       quickLinks: "Quick Links",
       followUs: "Follow Us",
       newsletter: "Newsletter",
@@ -190,9 +190,9 @@ const translations: Record<Language, Translations> = {
       contact: "اتصل بنا",
     },
     hero: {
-      tagline: "عطور فاخرة",
-      headline: "ارتدِ عطرك\nالمميز",
-      sub: "اكتشف العطور المصنوعة يدويًا التي تحكي قصتك. كل زجاجة رحلة إلى فن العطور الفاخرة.",
+      tagline: "بيت العطور",
+      headline: "خالدٌ بالتصميم،\nمُعرّفٌ بالجوهر",
+      sub: "في أوريث، العطر أكثر من مجرد رائحة — إنه تعبير عن الأناقة الهادئة، مصنوع بدقة وذوق رفيع خالد.",
       cta: "استكشف المجموعة",
       ctaOffers: "عرض العروض",
     },
@@ -250,7 +250,7 @@ const translations: Record<Language, Translations> = {
     },
     footer: {
       rights: "جميع الحقوق محفوظة.",
-      tagline: "فن العطور الفاخرة",
+      tagline: "خالدٌ بالتصميم، مُعرّفٌ بالجوهر",
       quickLinks: "روابط سريعة",
       followUs: "تابعنا",
       newsletter: "النشرة البريدية",
