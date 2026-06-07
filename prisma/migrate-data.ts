@@ -1,4 +1,5 @@
-const { PrismaClient } = require("@prisma/client");
+// ✅ Replace with this
+import { PrismaClient } from "@prisma/client";
 
 // Create two Prisma clients - one for local, one for production
 const localDB = new PrismaClient({
