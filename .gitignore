@@ -17,6 +17,9 @@ next-env.d.ts
 .DS_Store
 *.pem
 
+# runtime data store (created by the orders API on first write)
+data/orders.json
+
 # debug
 npm-debug.log*
 yarn-debug.log*

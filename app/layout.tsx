@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { LanguageProvider } from "@/context/LanguageContext";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "ORITH — Maison de Parfum",
@@ -31,13 +29,9 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-ivory min-h-screen flex flex-col">
+      <body className="bg-ivory min-h-screen">
         <LanguageProvider>
-          <CartProvider>
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </CartProvider>
+          <CartProvider>{children}</CartProvider>
         </LanguageProvider>
       </body>
     </html>
