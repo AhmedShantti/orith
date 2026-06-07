@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { products, offers, categories } from "@/data/products";
+import { offers, categories } from "@/data/products";
+import { getAllProducts } from "@/lib/productStore";
 
 // GET /api/stats — aggregate metrics for the admin dashboard
 export async function GET() {
+  const products = await getAllProducts();
   const total = products.length;
   const collectionValue = products.reduce((sum, p) => sum + p.price, 0);
   const avgPrice = total ? Math.round(collectionValue / total) : 0;

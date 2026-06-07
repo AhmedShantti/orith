@@ -17,8 +17,11 @@ next-env.d.ts
 .DS_Store
 *.pem
 
-# runtime data store (created by the orders API on first write)
+# runtime data stores (created by the API on first write)
 data/orders.json
+data/custom-products.json
+# admin-uploaded product images
+public/products/upload-*
 
 # debug
 npm-debug.log*

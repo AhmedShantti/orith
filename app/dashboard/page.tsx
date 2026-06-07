@@ -2,6 +2,16 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Emblem from "@/components/Emblem";
+import { useLang } from "@/context/LanguageContext";
+import { dict } from "./dict";
+import {
+  SalesIcon,
+  ReceiptIcon,
+  UnitsIcon,
+  ChartIcon,
+  BottleIcon,
+  TagIcon,
+} from "./icons";
 
 interface Stats {
   totalProducts: number;
@@ -43,6 +53,9 @@ const statusStyle: Record<string, string> = {
 };
 
 export default function OverviewPage() {
+  const { lang } = useLang();
+  const d = dict[lang];
+
   const [stats, setStats] = useState<Stats | null>(null);
   const [orders, setOrders] = useState<OrdersResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -77,7 +90,7 @@ export default function OverviewPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-5">
         <Emblem size={40} className="text-crimson animate-pulse" />
-        <p className="eyebrow text-[10px] text-obsidian/40">Loading…</p>
+        <p className="eyebrow text-[10px] text-obsidian/40">{d.loading}</p>
       </div>
     );
   }
@@ -86,7 +99,7 @@ export default function OverviewPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-5">
         <Emblem size={40} className="text-obsidian/20" />
-        <p className="display text-2xl text-obsidian/50">Could not load data</p>
+        <p className="display text-2xl text-obsidian/50">{d.couldNotLoad}</p>
         <p className="eyebrow text-[10px] text-crimson">{error}</p>
       </div>
     );
@@ -95,14 +108,14 @@ export default function OverviewPage() {
   const maxCat = Math.max(...stats.categories.map((c) => c.count), 1);
 
   const kpis = [
-    { label: "Total Sales", value: fmt(orders.revenue), suffix: "EGP" },
-    { label: "Orders", value: fmt(orders.orderCount), suffix: "" },
-    { label: "Units Sold", value: fmt(orders.unitsSold), suffix: "" },
-    { label: "Avg Order Value", value: fmt(orders.avgOrderValue), suffix: "EGP" },
-    { label: "Total Fragrances", value: fmt(stats.totalProducts), suffix: "" },
-    { label: "Collection Value", value: fmt(stats.collectionValue), suffix: "EGP" },
-    { label: "Average Price", value: fmt(stats.avgPrice), suffix: "EGP" },
-    { label: "Active Offers", value: fmt(stats.activeOffers), suffix: "" },
+    { label: d.kpi.totalSales, value: fmt(orders.revenue), suffix: d.egp, Icon: SalesIcon },
+    { label: d.kpi.orders, value: fmt(orders.orderCount), suffix: "", Icon: ReceiptIcon },
+    { label: d.kpi.unitsSold, value: fmt(orders.unitsSold), suffix: "", Icon: UnitsIcon },
+    { label: d.kpi.avgOrderValue, value: fmt(orders.avgOrderValue), suffix: d.egp, Icon: ChartIcon },
+    { label: d.kpi.totalFragrances, value: fmt(stats.totalProducts), suffix: "", Icon: BottleIcon },
+    { label: d.kpi.collectionValue, value: fmt(stats.collectionValue), suffix: d.egp, Icon: ChartIcon },
+    { label: d.kpi.averagePrice, value: fmt(stats.avgPrice), suffix: d.egp, Icon: TagIcon },
+    { label: d.kpi.activeOffers, value: fmt(stats.activeOffers), suffix: "", Icon: TagIcon },
   ];
 
   return (
@@ -110,19 +123,19 @@ export default function OverviewPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 border-b border-obsidian/12 pb-8 mb-12">
         <div>
-          <p className="eyebrow text-crimson mb-4">Administration</p>
+          <p className="eyebrow text-crimson mb-4">{d.administration}</p>
           <h1
             className="display text-4xl sm:text-5xl lg:text-6xl text-obsidian"
             style={{ fontWeight: 600 }}
           >
-            Dashboard
+            {d.nav.dashboard}
           </h1>
         </div>
         <Link
           href="/dashboard/orders"
           className="btn-crimson text-[10px] self-start md:self-auto"
         >
-          New Order
+          {d.overview.newOrder}
         </Link>
       </div>
 
@@ -130,7 +143,10 @@ export default function OverviewPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-obsidian/10 border border-obsidian/10 mb-14">
         {kpis.map((k) => (
           <div key={k.label} className="bg-ivory p-6 lg:p-7 flex flex-col gap-3">
-            <p className="eyebrow text-[9px] text-obsidian/40">{k.label}</p>
+            <div className="flex items-center justify-between text-obsidian/40">
+              <p className="eyebrow text-[9px]">{k.label}</p>
+              <k.Icon size={16} className="text-crimson/60 shrink-0" />
+            </div>
             <p
               className="display text-2xl lg:text-3xl text-obsidian"
               style={{ fontWeight: 500 }}
@@ -150,13 +166,13 @@ export default function OverviewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-px bg-obsidian/10 border border-obsidian/10 mb-14">
         <div className="bg-ivory p-8 lg:col-span-2">
           <p className="eyebrow text-[9px] text-obsidian/40 mb-8">
-            Collection by Category
+            {d.overview.collectionByCategory}
           </p>
           <div className="flex flex-col gap-5">
             {stats.categories.map((c) => (
               <div key={c.id} className="flex items-center gap-4">
                 <span className="eyebrow text-[10px] text-obsidian/70 w-24 shrink-0">
-                  {c.labelEn}
+                  {d.cat[c.id] ?? c.labelEn}
                 </span>
                 <div className="flex-1 h-2 bg-obsidian/8">
                   <div
@@ -173,26 +189,34 @@ export default function OverviewPage() {
         </div>
 
         <div className="bg-ivory p-8 flex flex-col gap-7">
-          <p className="eyebrow text-[9px] text-obsidian/40">Highlights</p>
+          <p className="eyebrow text-[9px] text-obsidian/40">{d.overview.highlights}</p>
           <div>
-            <p className="eyebrow text-[9px] text-obsidian/40 mb-2">Most Precious</p>
+            <p className="eyebrow text-[9px] text-obsidian/40 mb-2">
+              {d.overview.mostPrecious}
+            </p>
             <p className="product-name text-xl text-obsidian">
               {stats.priciest.nameEn}
             </p>
             <p className="display text-lg text-crimson mt-1">
               {fmt(stats.priciest.price)}
-              <span className="font-body text-[10px] text-obsidian/40 ms-1.5">EGP</span>
+              <span className="font-body text-[10px] text-obsidian/40 ms-1.5">
+                {d.egp}
+              </span>
             </p>
           </div>
           <div className="hairline text-obsidian" />
           <div>
-            <p className="eyebrow text-[9px] text-obsidian/40 mb-2">Most Accessible</p>
+            <p className="eyebrow text-[9px] text-obsidian/40 mb-2">
+              {d.overview.mostAccessible}
+            </p>
             <p className="product-name text-xl text-obsidian">
               {stats.cheapest.nameEn}
             </p>
             <p className="display text-lg text-crimson mt-1">
               {fmt(stats.cheapest.price)}
-              <span className="font-body text-[10px] text-obsidian/40 ms-1.5">EGP</span>
+              <span className="font-body text-[10px] text-obsidian/40 ms-1.5">
+                {d.egp}
+              </span>
             </p>
           </div>
         </div>
@@ -200,24 +224,24 @@ export default function OverviewPage() {
 
       {/* Recent orders */}
       <div className="flex items-center justify-between mb-6">
-        <p className="eyebrow text-crimson">Recent Orders</p>
+        <p className="eyebrow text-crimson">{d.overview.recentOrders}</p>
         <Link
           href="/dashboard/orders"
           className="eyebrow text-[10px] text-obsidian/50 link-underline"
         >
-          View all
+          {d.overview.viewAll}
         </Link>
       </div>
 
       {orders.orders.length === 0 ? (
         <div className="border border-obsidian/10 text-center py-16 flex flex-col items-center gap-4">
           <Emblem size={32} className="text-obsidian/20" />
-          <p className="display text-xl text-obsidian/40">No orders yet</p>
+          <p className="display text-xl text-obsidian/40">{d.overview.noOrders}</p>
           <Link
             href="/dashboard/orders"
             className="eyebrow text-[10px] text-crimson link-underline"
           >
-            Record your first order
+            {d.overview.recordFirst}
           </Link>
         </div>
       ) : (
@@ -225,14 +249,16 @@ export default function OverviewPage() {
           <table className="w-full min-w-[620px]">
             <thead>
               <tr className="bg-obsidian/[0.03] border-b border-obsidian/10">
-                {["Customer", "Product", "Qty", "Status", "Total"].map((h) => (
-                  <th
-                    key={h}
-                    className="eyebrow text-[9px] text-obsidian/40 text-start px-6 py-4 font-normal"
-                  >
-                    {h}
-                  </th>
-                ))}
+                {[d.table.customer, d.table.product, d.table.qty, d.table.status, d.table.total].map(
+                  (h) => (
+                    <th
+                      key={h}
+                      className="eyebrow text-[9px] text-obsidian/40 text-start px-6 py-4 font-normal"
+                    >
+                      {h}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
             <tbody>
@@ -249,17 +275,17 @@ export default function OverviewPage() {
                   </td>
                   <td className="px-6 py-4">
                     <span
-                      className={`inline-block eyebrow text-[8px] px-2 py-1 border capitalize ${
+                      className={`inline-block eyebrow text-[8px] px-2 py-1 border ${
                         statusStyle[o.status] ?? "text-obsidian/50 border-obsidian/20"
                       }`}
                     >
-                      {o.status}
+                      {d.status[o.status as keyof typeof d.status] ?? o.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 display text-base text-obsidian whitespace-nowrap">
                     {fmt(o.total)}
                     <span className="font-body text-[10px] text-obsidian/40 ms-1">
-                      EGP
+                      {d.egp}
                     </span>
                   </td>
                 </tr>

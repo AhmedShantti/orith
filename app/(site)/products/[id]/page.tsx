@@ -1,20 +1,53 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useLang } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
-import { products } from "@/data/products";
+import type { Product } from "@/types";
 import Emblem from "@/components/Emblem";
 
 export default function ProductDetailsPage() {
   const params = useParams();
   const { t, lang } = useLang();
   const { addItem } = useCart();
-  const product = products.find((p) => p.id === params.id);
-  const [selectedSize, setSelectedSize] = useState(product?.sizes[0] || "");
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedSize, setSelectedSize] = useState("");
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/products");
+        const json = (await res.json()) as { products: Product[] };
+        if (!cancelled) setProducts(json.products);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const product = products.find((p) => p.id === params.id);
+
+  useEffect(() => {
+    if (product) setSelectedSize(product.sizes[0] || "");
+  }, [product]);
+
+  if (loading) {
+    return (
+      <div className="pt-32 pb-24 min-h-screen bg-ivory flex flex-col items-center justify-center gap-5">
+        <Emblem size={40} className="text-crimson animate-pulse" />
+        <p className="eyebrow text-[10px] text-obsidian/40">Loading…</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (

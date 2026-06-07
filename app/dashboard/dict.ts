@@ -1,0 +1,254 @@
+import type { Language } from "@/context/LanguageContext";
+
+// Dashboard-only translations (kept separate from the storefront dictionary).
+export const dict = {
+  en: {
+    administration: "Administration",
+    staffOnly: "Internal · Staff only",
+    loading: "Loading…",
+    couldNotLoad: "Could not load data",
+
+    nav: { dashboard: "Dashboard", orders: "Orders", catalogue: "Catalogue" },
+
+    kpi: {
+      totalSales: "Total Sales",
+      orders: "Orders",
+      unitsSold: "Units Sold",
+      avgOrderValue: "Avg Order Value",
+      totalFragrances: "Total Fragrances",
+      collectionValue: "Collection Value",
+      averagePrice: "Average Price",
+      activeOffers: "Active Offers",
+    },
+
+    overview: {
+      newOrder: "New Order",
+      collectionByCategory: "Collection by Category",
+      highlights: "Highlights",
+      mostPrecious: "Most Precious",
+      mostAccessible: "Most Accessible",
+      recentOrders: "Recent Orders",
+      viewAll: "View all",
+      noOrders: "No orders yet",
+      recordFirst: "Record your first order",
+    },
+
+    orders: {
+      title: "Orders",
+      recordNew: "Record New Order",
+      customerName: "Customer Name",
+      fullName: "Full name",
+      product: "Product",
+      select: "Select…",
+      size: "Size",
+      quantity: "Quantity",
+      status: "Status",
+      estimatedTotal: "Estimated total:",
+      addOrder: "Add Order",
+      saving: "Saving…",
+      errCustomer: "Enter a customer name",
+      errProduct: "Choose a product",
+      allOrders: "All Orders",
+      noOrders: "No orders yet",
+      useForm: "Use the form above to record your first order.",
+      deleteOrder: "Delete order",
+    },
+
+    catalogue: {
+      title: "Catalogue",
+      search: "Search fragrances…",
+      fragrances: "Fragrances",
+      fragrance: "Fragrance",
+      noResults: "No fragrances found",
+      clearFilters: "Clear filters",
+      addProduct: "Add Product",
+      cancel: "Cancel",
+    },
+
+    addForm: {
+      title: "Add New Product",
+      subtitle: "It will appear on the website immediately.",
+      nameEn: "Name (English)",
+      nameAr: "Name (Arabic)",
+      descEn: "Description (English)",
+      descAr: "Description (Arabic)",
+      price: "Price (EGP)",
+      category: "Category",
+      sizes: "Sizes (comma separated)",
+      badge: "Badge (optional)",
+      none: "None",
+      image: "Image",
+      pickExisting: "Choose existing",
+      upload: "Upload image",
+      save: "Save Product",
+      saving: "Saving…",
+      added: "Product added to the website",
+      errName: "Enter both English and Arabic names",
+      errPrice: "Enter a valid price",
+    },
+
+    table: {
+      customer: "Customer",
+      product: "Product",
+      qty: "Qty",
+      status: "Status",
+      total: "Total",
+      size: "Size",
+      fragrance: "Fragrance",
+      category: "Category",
+      price: "Price",
+    },
+
+    status: {
+      pending: "Pending",
+      paid: "Paid",
+      shipped: "Shipped",
+      delivered: "Delivered",
+      cancelled: "Cancelled",
+    },
+
+    badge: {
+      bestseller: "Bestseller",
+      new: "New",
+      limited: "Limited",
+      offer: "Offer",
+    },
+
+    cat: {
+      all: "All",
+      oriental: "Oriental",
+      floral: "Floral",
+      woody: "Woody",
+      fresh: "Fresh",
+      powdery: "Powdery",
+    } as Record<string, string>,
+
+    egp: "EGP",
+  },
+
+  ar: {
+    administration: "الإدارة",
+    staffOnly: "داخلي · للموظفين فقط",
+    loading: "جارٍ التحميل…",
+    couldNotLoad: "تعذّر تحميل البيانات",
+
+    nav: { dashboard: "لوحة التحكم", orders: "الطلبات", catalogue: "الكتالوج" },
+
+    kpi: {
+      totalSales: "إجمالي المبيعات",
+      orders: "الطلبات",
+      unitsSold: "الوحدات المباعة",
+      avgOrderValue: "متوسط قيمة الطلب",
+      totalFragrances: "إجمالي العطور",
+      collectionValue: "قيمة المجموعة",
+      averagePrice: "متوسط السعر",
+      activeOffers: "العروض الفعّالة",
+    },
+
+    overview: {
+      newOrder: "طلب جديد",
+      collectionByCategory: "المجموعة حسب الفئة",
+      highlights: "أبرز العطور",
+      mostPrecious: "الأغلى",
+      mostAccessible: "الأنسب سعراً",
+      recentOrders: "أحدث الطلبات",
+      viewAll: "عرض الكل",
+      noOrders: "لا توجد طلبات بعد",
+      recordFirst: "سجّل أول طلب",
+    },
+
+    orders: {
+      title: "الطلبات",
+      recordNew: "تسجيل طلب جديد",
+      customerName: "اسم العميل",
+      fullName: "الاسم الكامل",
+      product: "المنتج",
+      select: "اختر…",
+      size: "الحجم",
+      quantity: "الكمية",
+      status: "الحالة",
+      estimatedTotal: "الإجمالي التقديري:",
+      addOrder: "إضافة طلب",
+      saving: "جارٍ الحفظ…",
+      errCustomer: "أدخل اسم العميل",
+      errProduct: "اختر منتجاً",
+      allOrders: "كل الطلبات",
+      noOrders: "لا توجد طلبات بعد",
+      useForm: "استخدم النموذج أعلاه لتسجيل أول طلب.",
+      deleteOrder: "حذف الطلب",
+    },
+
+    catalogue: {
+      title: "الكتالوج",
+      search: "ابحث عن عطر…",
+      fragrances: "عطر",
+      fragrance: "عطر",
+      noResults: "لم يتم العثور على عطور",
+      clearFilters: "مسح عوامل التصفية",
+      addProduct: "إضافة منتج",
+      cancel: "إلغاء",
+    },
+
+    addForm: {
+      title: "إضافة منتج جديد",
+      subtitle: "سيظهر على الموقع فوراً.",
+      nameEn: "الاسم (إنجليزي)",
+      nameAr: "الاسم (عربي)",
+      descEn: "الوصف (إنجليزي)",
+      descAr: "الوصف (عربي)",
+      price: "السعر (ج.م)",
+      category: "الفئة",
+      sizes: "الأحجام (مفصولة بفواصل)",
+      badge: "الشارة (اختياري)",
+      none: "بدون",
+      image: "الصورة",
+      pickExisting: "اختر صورة موجودة",
+      upload: "رفع صورة",
+      save: "حفظ المنتج",
+      saving: "جارٍ الحفظ…",
+      added: "تمت إضافة المنتج إلى الموقع",
+      errName: "أدخل الاسم بالإنجليزية والعربية",
+      errPrice: "أدخل سعراً صحيحاً",
+    },
+
+    table: {
+      customer: "العميل",
+      product: "المنتج",
+      qty: "الكمية",
+      status: "الحالة",
+      total: "الإجمالي",
+      size: "الحجم",
+      fragrance: "العطر",
+      category: "الفئة",
+      price: "السعر",
+    },
+
+    status: {
+      pending: "قيد الانتظار",
+      paid: "مدفوع",
+      shipped: "تم الشحن",
+      delivered: "تم التوصيل",
+      cancelled: "ملغي",
+    },
+
+    badge: {
+      bestseller: "الأكثر مبيعاً",
+      new: "جديد",
+      limited: "محدود",
+      offer: "عرض",
+    },
+
+    cat: {
+      all: "الكل",
+      oriental: "شرقي",
+      floral: "زهري",
+      woody: "خشبي",
+      fresh: "منعش",
+      powdery: "بودري",
+    } as Record<string, string>,
+
+    egp: "ج.م",
+  },
+} as const;
+
+export type Dict = (typeof dict)[Language];

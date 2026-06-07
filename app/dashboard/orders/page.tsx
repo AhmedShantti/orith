@@ -1,7 +1,10 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import Emblem from "@/components/Emblem";
+import { useLang } from "@/context/LanguageContext";
 import type { Product } from "@/types";
+import { dict } from "../dict";
+import { SalesIcon, ReceiptIcon, UnitsIcon, ChartIcon, TrashIcon } from "../icons";
 
 interface Order {
   id: string;
@@ -25,7 +28,7 @@ interface OrdersResponse {
 }
 
 const fmt = (n: number) => n.toLocaleString();
-const STATUSES = ["pending", "paid", "shipped", "delivered", "cancelled"];
+const STATUSES = ["pending", "paid", "shipped", "delivered", "cancelled"] as const;
 
 const statusStyle: Record<string, string> = {
   pending: "text-amber-700 border-amber-700/30",
@@ -40,6 +43,9 @@ const inputCls =
 const labelCls = "eyebrow text-[9px] text-obsidian/45 mb-2 block";
 
 export default function OrdersPage() {
+  const { lang } = useLang();
+  const d = dict[lang];
+
   const [data, setData] = useState<OrdersResponse | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,13 +63,12 @@ export default function OrdersPage() {
     () => products.find((p) => p.id === productId),
     [products, productId]
   );
-
   const estTotal = selectedProduct ? selectedProduct.price * quantity : 0;
+  const name = (p: Product) => (lang === "ar" ? p.nameAr : p.nameEn);
 
   const load = async () => {
     const res = await fetch("/api/orders");
-    const json = (await res.json()) as OrdersResponse;
-    setData(json);
+    setData((await res.json()) as OrdersResponse);
   };
 
   useEffect(() => {
@@ -88,7 +93,6 @@ export default function OrdersPage() {
     };
   }, []);
 
-  // keep size valid when product changes
   useEffect(() => {
     if (selectedProduct) setSize(selectedProduct.sizes[0] ?? "");
   }, [selectedProduct]);
@@ -96,8 +100,8 @@ export default function OrdersPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    if (!customerName.trim()) return setFormError("Enter a customer name");
-    if (!productId) return setFormError("Choose a product");
+    if (!customerName.trim()) return setFormError(d.orders.errCustomer);
+    if (!productId) return setFormError(d.orders.errProduct);
 
     setSubmitting(true);
     try {
@@ -110,7 +114,6 @@ export default function OrdersPage() {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error ?? "Failed to create order");
       }
-      // reset form
       setCustomerName("");
       setProductId("");
       setQuantity(1);
@@ -141,38 +144,39 @@ export default function OrdersPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-5">
         <Emblem size={40} className="text-crimson animate-pulse" />
-        <p className="eyebrow text-[10px] text-obsidian/40">Loading…</p>
+        <p className="eyebrow text-[10px] text-obsidian/40">{d.loading}</p>
       </div>
     );
   }
+
+  const summary = [
+    { label: d.kpi.totalSales, value: fmt(data?.revenue ?? 0), suffix: d.egp, Icon: SalesIcon },
+    { label: d.kpi.orders, value: fmt(data?.orderCount ?? 0), suffix: "", Icon: ReceiptIcon },
+    { label: d.kpi.unitsSold, value: fmt(data?.unitsSold ?? 0), suffix: "", Icon: UnitsIcon },
+    { label: d.kpi.avgOrderValue, value: fmt(data?.avgOrderValue ?? 0), suffix: d.egp, Icon: ChartIcon },
+  ];
 
   return (
     <div className="page-transition px-6 lg:px-12 py-10 lg:py-14">
       {/* Header */}
       <div className="border-b border-obsidian/12 pb-8 mb-12">
-        <p className="eyebrow text-crimson mb-4">Administration</p>
+        <p className="eyebrow text-crimson mb-4">{d.administration}</p>
         <h1
           className="display text-4xl sm:text-5xl lg:text-6xl text-obsidian"
           style={{ fontWeight: 600 }}
         >
-          Orders
+          {d.orders.title}
         </h1>
       </div>
 
       {/* Summary */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-obsidian/10 border border-obsidian/10 mb-14">
-        {[
-          { label: "Total Sales", value: fmt(data?.revenue ?? 0), suffix: "EGP" },
-          { label: "Orders", value: fmt(data?.orderCount ?? 0), suffix: "" },
-          { label: "Units Sold", value: fmt(data?.unitsSold ?? 0), suffix: "" },
-          {
-            label: "Avg Order Value",
-            value: fmt(data?.avgOrderValue ?? 0),
-            suffix: "EGP",
-          },
-        ].map((k) => (
+        {summary.map((k) => (
           <div key={k.label} className="bg-ivory p-6 lg:p-7 flex flex-col gap-3">
-            <p className="eyebrow text-[9px] text-obsidian/40">{k.label}</p>
+            <div className="flex items-center justify-between text-obsidian/40">
+              <p className="eyebrow text-[9px]">{k.label}</p>
+              <k.Icon size={16} className="text-crimson/60 shrink-0" />
+            </div>
             <p
               className="display text-2xl lg:text-3xl text-obsidian"
               style={{ fontWeight: 500 }}
@@ -190,40 +194,40 @@ export default function OrdersPage() {
 
       {/* New order form */}
       <div className="border border-obsidian/10 bg-ivory p-8 mb-14">
-        <p className="eyebrow text-crimson mb-8">Record New Order</p>
-        <form onSubmit={submit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
-          {/* Customer */}
+        <p className="eyebrow text-crimson mb-8">{d.orders.recordNew}</p>
+        <form
+          onSubmit={submit}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end"
+        >
           <div className="lg:col-span-1">
-            <label className={labelCls}>Customer Name</label>
+            <label className={labelCls}>{d.orders.customerName}</label>
             <input
               type="text"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="Full name"
+              placeholder={d.orders.fullName}
               className={inputCls}
             />
           </div>
 
-          {/* Product */}
           <div className="lg:col-span-1">
-            <label className={labelCls}>Product</label>
+            <label className={labelCls}>{d.orders.product}</label>
             <select
               value={productId}
               onChange={(e) => setProductId(e.target.value)}
               className={`${inputCls} cursor-pointer`}
             >
-              <option value="">Select…</option>
+              <option value="">{d.orders.select}</option>
               {products.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.nameEn} — {fmt(p.price)} EGP
+                  {name(p)} — {fmt(p.price)} {d.egp}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Size */}
           <div>
-            <label className={labelCls}>Size</label>
+            <label className={labelCls}>{d.orders.size}</label>
             <select
               value={size}
               onChange={(e) => setSize(e.target.value)}
@@ -238,9 +242,8 @@ export default function OrdersPage() {
             </select>
           </div>
 
-          {/* Quantity */}
           <div>
-            <label className={labelCls}>Quantity</label>
+            <label className={labelCls}>{d.orders.quantity}</label>
             <input
               type="number"
               min={1}
@@ -250,29 +253,29 @@ export default function OrdersPage() {
             />
           </div>
 
-          {/* Status */}
           <div>
-            <label className={labelCls}>Status</label>
+            <label className={labelCls}>{d.orders.status}</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className={`${inputCls} cursor-pointer capitalize`}
+              className={`${inputCls} cursor-pointer`}
             >
               {STATUSES.map((s) => (
-                <option key={s} value={s} className="capitalize">
-                  {s}
+                <option key={s} value={s}>
+                  {d.status[s]}
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Total + submit */}
           <div className="lg:col-span-5 flex flex-col sm:flex-row sm:items-center justify-between gap-5 pt-4 border-t border-obsidian/10">
             <p className="font-body text-sm text-obsidian/60">
-              Estimated total:{" "}
+              {d.orders.estimatedTotal}{" "}
               <span className="display text-xl text-crimson ms-1">
                 {fmt(estTotal)}
-                <span className="font-body text-[10px] text-obsidian/40 ms-1">EGP</span>
+                <span className="font-body text-[10px] text-obsidian/40 ms-1">
+                  {d.egp}
+                </span>
               </span>
             </p>
             <div className="flex items-center gap-5">
@@ -284,7 +287,7 @@ export default function OrdersPage() {
                 disabled={submitting}
                 className="btn-crimson text-[10px] disabled:opacity-50"
               >
-                {submitting ? "Saving…" : "Add Order"}
+                {submitting ? d.orders.saving : d.orders.addOrder}
               </button>
             </div>
           </div>
@@ -293,32 +296,36 @@ export default function OrdersPage() {
 
       {/* Orders table */}
       <p className="eyebrow text-crimson mb-6">
-        All Orders — {String(data?.orderCount ?? 0).padStart(2, "0")}
+        {d.orders.allOrders} — {String(data?.orderCount ?? 0).padStart(2, "0")}
       </p>
 
       {(data?.orders.length ?? 0) === 0 ? (
         <div className="border border-obsidian/10 text-center py-16 flex flex-col items-center gap-4">
           <Emblem size={32} className="text-obsidian/20" />
-          <p className="display text-xl text-obsidian/40">No orders yet</p>
-          <p className="font-body text-sm text-obsidian/40">
-            Use the form above to record your first order.
-          </p>
+          <p className="display text-xl text-obsidian/40">{d.orders.noOrders}</p>
+          <p className="font-body text-sm text-obsidian/40">{d.orders.useForm}</p>
         </div>
       ) : (
         <div className="border border-obsidian/10 overflow-x-auto">
           <table className="w-full min-w-[820px]">
             <thead>
               <tr className="bg-obsidian/[0.03] border-b border-obsidian/10">
-                {["Customer", "Product", "Size", "Qty", "Total", "Status", ""].map(
-                  (h) => (
-                    <th
-                      key={h}
-                      className="eyebrow text-[9px] text-obsidian/40 text-start px-5 py-4 font-normal"
-                    >
-                      {h}
-                    </th>
-                  )
-                )}
+                {[
+                  d.table.customer,
+                  d.table.product,
+                  d.table.size,
+                  d.table.qty,
+                  d.table.total,
+                  d.table.status,
+                  "",
+                ].map((h, i) => (
+                  <th
+                    key={i}
+                    className="eyebrow text-[9px] text-obsidian/40 text-start px-5 py-4 font-normal"
+                  >
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -347,20 +354,20 @@ export default function OrdersPage() {
                   <td className="px-5 py-4 display text-base text-obsidian whitespace-nowrap">
                     {fmt(o.total)}
                     <span className="font-body text-[10px] text-obsidian/40 ms-1">
-                      EGP
+                      {d.egp}
                     </span>
                   </td>
                   <td className="px-5 py-4">
                     <select
                       value={o.status}
                       onChange={(e) => updateStatus(o.id, e.target.value)}
-                      className={`eyebrow text-[8px] px-2 py-1.5 border bg-transparent cursor-pointer capitalize focus:outline-none ${
+                      className={`eyebrow text-[8px] px-2 py-1.5 border bg-transparent cursor-pointer focus:outline-none ${
                         statusStyle[o.status] ?? "text-obsidian/50 border-obsidian/20"
                       }`}
                     >
                       {STATUSES.map((s) => (
-                        <option key={s} value={s} className="capitalize text-obsidian">
-                          {s}
+                        <option key={s} value={s} className="text-obsidian">
+                          {d.status[s]}
                         </option>
                       ))}
                     </select>
@@ -368,20 +375,10 @@ export default function OrdersPage() {
                   <td className="px-5 py-4 text-end">
                     <button
                       onClick={() => remove(o.id)}
-                      aria-label="Delete order"
+                      aria-label={d.orders.deleteOrder}
                       className="text-obsidian/30 hover:text-crimson transition-colors"
                     >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      >
-                        <polyline points="3 6 5 6 21 6" />
-                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                      </svg>
+                      <TrashIcon size={16} />
                     </button>
                   </td>
                 </tr>

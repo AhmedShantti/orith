@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
-import { products } from "@/data/products";
+import { getAllProducts } from "@/lib/productStore";
 
 export interface Order {
   id: string;
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const product = products.find((p) => p.id === productId);
+  const product = (await getAllProducts()).find((p) => p.id === productId);
   if (!product) {
     return NextResponse.json(
       { error: "Unknown product" },

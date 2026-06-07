@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLang } from "@/context/LanguageContext";
-import { products, categories } from "@/data/products";
+import { categories } from "@/data/products";
+import type { Product } from "@/types";
 import ProductCard from "@/components/ProductCard";
 import Emblem from "@/components/Emblem";
 
@@ -9,6 +10,24 @@ export default function ProductsPage() {
   const { t, lang } = useLang();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/products");
+        const json = (await res.json()) as { products: Product[] };
+        if (!cancelled) setProducts(json.products);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -22,7 +41,7 @@ export default function ProductsPage() {
         activeCategory === "all" || p.category === activeCategory;
       return matchSearch && matchCat;
     });
-  }, [search, activeCategory, lang]);
+  }, [products, search, activeCategory, lang]);
 
   return (
     <div className="page-transition pt-32 pb-28 min-h-screen bg-ivory">
@@ -85,7 +104,12 @@ export default function ProductsPage() {
         </p>
 
         {/* Grid */}
-        {filtered.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-24 flex flex-col items-center gap-5">
+            <Emblem size={40} className="text-crimson animate-pulse" />
+            <p className="eyebrow text-[10px] text-obsidian/40">Loading…</p>
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-px bg-obsidian/10 border border-obsidian/10">
             {filtered.map((product) => (
               <div key={product.id} className="bg-ivory">
