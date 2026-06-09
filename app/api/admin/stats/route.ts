@@ -75,7 +75,9 @@ export async function GET(request: NextRequest) {
       take: 5,
     });
 
-    const topProductIds = topProductsRaw.map((p) => p.productId);
+    const topProductIds = topProductsRaw
+      .map((p) => p.productId)
+      .filter((id): id is string => id !== null);
     const topProductDetails = await prisma.product.findMany({
       where: { id: { in: topProductIds } },
     });
@@ -83,7 +85,7 @@ export async function GET(request: NextRequest) {
     const topProducts = topProductsRaw.map((item) => {
       const product = topProductDetails.find((p) => p.id === item.productId);
       return {
-        productId: item.productId,
+        productId: item.productId ?? "",
         nameEn: product?.nameEn || "Unknown",
         image: product?.image || "",
         unitsSold: item._sum.quantity || 0,

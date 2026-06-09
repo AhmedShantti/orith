@@ -9,10 +9,13 @@ import LoadingSkeleton from "@/components/admin/LoadingSkeleton";
 
 const statusFilters: Array<{ label: string; value: string }> = [
   { label: "All", value: "ALL" },
-  { label: "Pending", value: "PENDING" },
+  { label: "Pending Payment", value: "PENDING_PAYMENT" },
+  { label: "Awaiting", value: "AWAITING_CONFIRMATION" },
   { label: "Processing", value: "PROCESSING" },
   { label: "Shipped", value: "SHIPPED" },
   { label: "Delivered", value: "DELIVERED" },
+  { label: "Payment Failed", value: "PAYMENT_FAILED" },
+  { label: "Cancelled", value: "CANCELLED" },
 ];
 
 export default function OrdersPage() {
@@ -116,7 +119,11 @@ export default function OrdersPage() {
                       {order.id.slice(0, 8)}...
                     </td>
                     <td className="px-5 py-3 text-sm text-[#f5f0e8]/80">
-                      {order.user?.name || "—"}
+                      {order.user?.name ||
+                        `${order.customerFirstName ?? ""} ${
+                          order.customerLastName ?? ""
+                        }`.trim() ||
+                        "—"}
                     </td>
                     <td className="px-5 py-3 text-sm text-white/50">
                       {order.items?.length || 0}

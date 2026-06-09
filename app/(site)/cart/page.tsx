@@ -1,31 +1,16 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLang } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
 import CartItem from "@/components/CartItem";
 import Emblem from "@/components/Emblem";
 
-const WHATSAPP_NUMBER = "201000000000";
-
 export default function CartPage() {
   const { t, lang } = useLang();
-  const { items, totalPrice, clearCart } = useCart();
-
-  const buildWhatsAppMessage = () => {
-    let msg = t.cart.orderMessage;
-    items.forEach((item) => {
-      const name = lang === "ar" ? item.product.nameAr : item.product.nameEn;
-      msg += `• ${name} (${item.selectedSize}) x${item.quantity} = ${(item.product.price * item.quantity).toLocaleString()} ${t.details.inEgp}\n`;
-    });
-    msg += `\n${t.cart.total}: ${totalPrice.toLocaleString()} ${t.details.inEgp}`;
-    return encodeURIComponent(msg);
-  };
-
-  const handleWhatsAppOrder = () => {
-    const message = buildWhatsAppMessage();
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
-  };
+  const { items, totalPrice } = useCart();
+  const router = useRouter();
 
   if (items.length === 0) {
     return (
@@ -128,12 +113,13 @@ export default function CartPage() {
                 </span>
               </div>
 
-              {/* WhatsApp order button */}
-              <button onClick={handleWhatsAppOrder} className="btn-crimson w-full">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
-                </svg>
-                {t.cart.orderWhatsApp}
+              {/* Proceed to checkout */}
+              <button
+                onClick={() => router.push("/checkout")}
+                disabled={items.length === 0}
+                className="btn-crimson w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Proceed to Checkout
               </button>
 
               {/* Continue shopping */}

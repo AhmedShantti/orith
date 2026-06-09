@@ -26,7 +26,40 @@ const statusConfig: Record<
     text: "text-emerald-400",
     dot: "bg-emerald-400",
   },
+  PENDING_PAYMENT: {
+    bg: "bg-amber-500/10",
+    text: "text-amber-400",
+    dot: "bg-amber-400",
+  },
+  AWAITING_CONFIRMATION: {
+    bg: "bg-sky-500/10",
+    text: "text-sky-400",
+    dot: "bg-sky-400",
+  },
+  CANCELLED: {
+    bg: "bg-white/5",
+    text: "text-white/40",
+    dot: "bg-white/40",
+  },
+  REFUNDED: {
+    bg: "bg-orange-500/10",
+    text: "text-orange-400",
+    dot: "bg-orange-400",
+  },
+  PAYMENT_FAILED: {
+    bg: "bg-red-500/10",
+    text: "text-red-400",
+    dot: "bg-red-400",
+  },
 };
+
+function prettify(status: OrderStatus): string {
+  return status
+    .toLowerCase()
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
 
 interface OrderStatusBadgeProps {
   status: OrderStatus;
@@ -39,7 +72,7 @@ export default function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-      {status.charAt(0) + status.slice(1).toLowerCase()}
+      {prettify(status)}
     </span>
   );
 }

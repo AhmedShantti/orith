@@ -11,12 +11,34 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
+// Visual fulfilment progression (post-payment lifecycle).
 const statusFlow: OrderStatus[] = [
-  "PENDING",
+  "PENDING_PAYMENT",
+  "AWAITING_CONFIRMATION",
   "PROCESSING",
   "SHIPPED",
   "DELIVERED",
 ];
+
+// Every status an admin may set from the dropdown.
+const allStatuses: OrderStatus[] = [
+  "PENDING_PAYMENT",
+  "AWAITING_CONFIRMATION",
+  "PROCESSING",
+  "SHIPPED",
+  "DELIVERED",
+  "PAYMENT_FAILED",
+  "CANCELLED",
+  "REFUNDED",
+];
+
+function prettyStatus(s: OrderStatus): string {
+  return s
+    .toLowerCase()
+    .split("_")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
 
 export default function OrderDetailPage() {
   const router = useRouter();
@@ -165,10 +187,10 @@ export default function OrderDetailPage() {
                     >
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-3">
-                          {item.product?.image && (
+                          {(item.imageUrl || item.product?.image) && (
                             <Image
-                              src={item.product.image}
-                              alt={item.product.nameEn}
+                              src={(item.imageUrl || item.product?.image) as string}
+                              alt={item.productName || item.product?.nameEn || "Item"}
                               width={36}
                               height={36}
                               className="rounded object-cover"
@@ -176,8 +198,13 @@ export default function OrderDetailPage() {
                           )}
                           <div>
                             <p className="text-sm text-[#f5f0e8]/80">
-                              {item.product?.nameEn || "—"}
+                              {item.productName || item.product?.nameEn || "—"}
                             </p>
+                            {item.variantName && (
+                              <p className="text-xs text-white/30">
+                                {item.variantName}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -218,19 +245,31 @@ export default function OrderDetailPage() {
             <h2 className="text-sm font-semibold text-[#f5f0e8] mb-4">
               Customer
             </h2>
-            {order.user && (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#c9a84c]/20 flex items-center justify-center text-[#c9a84c] text-sm font-bold">
-                  {order.user.name.charAt(0).toUpperCase()}
+            {(() => {
+              const name =
+                order.user?.name ||
+                `${order.customerFirstName ?? ""} ${
+                  order.customerLastName ?? ""
+                }`.trim() ||
+                "Guest";
+              const email = order.user?.email || order.customerEmail || "—";
+              return (
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#c9a84c]/20 flex items-center justify-center text-[#c9a84c] text-sm font-bold">
+                    {name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm text-[#f5f0e8]/80">{name}</p>
+                    <p className="text-xs text-white/30">{email}</p>
+                    {order.customerPhone && (
+                      <p className="text-xs text-white/30">
+                        {order.customerPhone}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-[#f5f0e8]/80">
-                    {order.user.name}
-                  </p>
-                  <p className="text-xs text-white/30">{order.user.email}</p>
-                </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
 
           {/* Update Status */}
@@ -259,7 +298,7 @@ export default function OrderDetailPage() {
                         isPast ? "text-[#f5f0e8]/80" : "text-white/30"
                       }`}
                     >
-                      {status.charAt(0) + status.slice(1).toLowerCase()}
+                      {prettyStatus(status)}
                     </span>
                   </div>
                 );
@@ -271,9 +310,9 @@ export default function OrderDetailPage() {
               onChange={(e) => setNewStatus(e.target.value as OrderStatus)}
               className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-[#f5f0e8] focus:outline-none focus:border-[#c9a84c]/50 mb-3"
             >
-              {statusFlow.map((status) => (
+              {allStatuses.map((status) => (
                 <option key={status} value={status}>
-                  {status.charAt(0) + status.slice(1).toLowerCase()}
+                  {prettyStatus(status)}
                 </option>
               ))}
             </select>

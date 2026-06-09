@@ -672,6 +672,25 @@ body {
 }
 .tile:hover .tile-img { transform: scale(1.06); }
 
+/* ---- Checkout step transition ---- */
+.checkout-step {
+  animation: checkoutStepIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes checkoutStepIn {
+  from { opacity: 0; transform: translateX(24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+[dir="rtl"] .checkout-step {
+  animation-name: checkoutStepInRtl;
+}
+@keyframes checkoutStepInRtl {
+  from { opacity: 0; transform: translateX(-24px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .checkout-step { animation: none; }
+}
+
 /* Vertical marquee-safe word strip */
 .word-marquee {
   display: flex;

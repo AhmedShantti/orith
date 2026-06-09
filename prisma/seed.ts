@@ -100,6 +100,39 @@ async function main() {
     });
   }
   console.log("Sample reviews created");
+
+  // --- Sample coupons for the checkout flow (amounts in piastres) ---
+  const coupons = [
+    {
+      code: "WELCOME10",
+      type: "PERCENTAGE" as const,
+      value: 10, // 10%
+      maxDiscountAmount: 30000, // cap at 300 EGP
+      isActive: true,
+    },
+    {
+      code: "SAVE50",
+      type: "FIXED_AMOUNT" as const,
+      value: 5000, // 50 EGP off
+      minOrderAmount: 50000, // min 500 EGP
+      isActive: true,
+    },
+    {
+      code: "ORITHVIP",
+      type: "PERCENTAGE" as const,
+      value: 15,
+      usageLimit: 100,
+      isActive: true,
+    },
+  ];
+  for (const c of coupons) {
+    await prisma.coupon.upsert({
+      where: { code: c.code },
+      update: {},
+      create: c,
+    });
+  }
+  console.log("Sample coupons created");
   console.log("Seed completed!");
 }
 

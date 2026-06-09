@@ -34,7 +34,23 @@ export interface Offer {
 
 // Backend API types
 export type UserRole = "ADMIN" | "CUSTOMER";
-export type OrderStatus = "PENDING" | "PROCESSING" | "SHIPPED" | "DELIVERED";
+export type OrderStatus =
+  | "PENDING"
+  | "PENDING_PAYMENT"
+  | "AWAITING_CONFIRMATION"
+  | "PROCESSING"
+  | "SHIPPED"
+  | "DELIVERED"
+  | "CANCELLED"
+  | "REFUNDED"
+  | "PAYMENT_FAILED";
+export type PaymentStatus =
+  | "UNPAID"
+  | "PAID"
+  | "FAILED"
+  | "REFUNDED"
+  | "PARTIALLY_REFUNDED";
+export type PaymentMethod = "MOBILE_WALLET" | "APPLE_PAY" | "CARD";
 
 export interface User {
   id: string;
@@ -68,23 +84,53 @@ export interface BackendProduct {
 
 export interface Order {
   id: string;
-  userId: string;
+  userId: string | null;
   status: OrderStatus;
   total: number;
   createdAt: Date;
   updatedAt: Date;
   items?: OrderItem[];
-  user?: User;
+  user?: User | null;
+
+  // Professional-checkout fields (all optional for backward compatibility)
+  orderNumber?: string | null;
+  customerFirstName?: string | null;
+  customerLastName?: string | null;
+  customerEmail?: string | null;
+  customerPhone?: string | null;
+  shippingAddress1?: string | null;
+  shippingAddress2?: string | null;
+  shippingCity?: string | null;
+  shippingGovernorate?: string | null;
+  shippingPostalCode?: string | null;
+  shippingCountry?: string | null;
+  subtotal?: number | null;
+  discountAmount?: number | null;
+  shippingFee?: number | null;
+  taxAmount?: number | null;
+  totalAmount?: number | null;
+  currency?: string | null;
+  couponCode?: string | null;
+  paymentMethod?: PaymentMethod | null;
+  paymentStatus?: PaymentStatus | null;
+  paidAt?: Date | null;
 }
 
 export interface OrderItem {
   id: string;
   orderId: string;
-  productId: string;
+  productId: string | null;
   quantity: number;
   price: number;
   createdAt: Date;
-  product?: BackendProduct;
+  product?: BackendProduct | null;
+
+  productName?: string | null;
+  productSku?: string | null;
+  variantName?: string | null;
+  unitPrice?: number | null;
+  totalPrice?: number | null;
+  imageUrl?: string | null;
 }
 
 export interface BackendCartItem {
