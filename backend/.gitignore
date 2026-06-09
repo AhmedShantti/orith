@@ -1,0 +1,13 @@
+node_modules
+dist
+*.tsbuildinfo
+
+# env
+.env
+.env*.local
+
+# runtime data stores
+data/orders.json
+data/custom-products.json
+
+.DS_Store

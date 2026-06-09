@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/api";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Emblem from "@/components/Emblem";
@@ -54,7 +55,7 @@ export default function CataloguePage() {
     setForm((f) => ({ ...f, [k]: v }));
 
   const load = async () => {
-    const res = await fetch("/api/products");
+    const res = await fetch(apiUrl("/api/products"));
     const json = (await res.json()) as { products: Product[] };
     setProducts(json.products);
   };
@@ -105,7 +106,7 @@ export default function CataloguePage() {
       if (file) {
         const fd = new FormData();
         fd.append("file", file);
-        const up = await fetch("/api/upload", { method: "POST", body: fd });
+        const up = await fetch(apiUrl("/api/upload"), { method: "POST", body: fd });
         if (!up.ok) {
           const err = await up.json().catch(() => ({}));
           throw new Error(err.error ?? "Upload failed");
@@ -113,7 +114,7 @@ export default function CataloguePage() {
         image = (await up.json()).path as string;
       }
 
-      const res = await fetch("/api/products", {
+      const res = await fetch(apiUrl("/api/products"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/api";
 import React, { useEffect, useMemo, useState } from "react";
 import Emblem from "@/components/Emblem";
 import { useLang } from "@/context/LanguageContext";
@@ -67,7 +68,7 @@ export default function OrdersPage() {
   const name = (p: Product) => (lang === "ar" ? p.nameAr : p.nameEn);
 
   const load = async () => {
-    const res = await fetch("/api/orders");
+    const res = await fetch(apiUrl("/api/orders"));
     setData((await res.json()) as OrdersResponse);
   };
 
@@ -76,8 +77,8 @@ export default function OrdersPage() {
     (async () => {
       try {
         const [o, p] = await Promise.all([
-          fetch("/api/orders"),
-          fetch("/api/products"),
+          fetch(apiUrl("/api/orders")),
+          fetch(apiUrl("/api/products")),
         ]);
         const ordersData = (await o.json()) as OrdersResponse;
         const productsData = (await p.json()) as { products: Product[] };
@@ -105,7 +106,7 @@ export default function OrdersPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch("/api/orders", {
+      const res = await fetch(apiUrl("/api/orders"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ customerName, productId, size, quantity, status }),
@@ -127,7 +128,7 @@ export default function OrdersPage() {
   };
 
   const updateStatus = async (id: string, newStatus: string) => {
-    await fetch(`/api/orders/${id}`, {
+    await fetch(apiUrl(`/api/orders/${id}`), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
@@ -136,7 +137,7 @@ export default function OrdersPage() {
   };
 
   const remove = async (id: string) => {
-    await fetch(`/api/orders/${id}`, { method: "DELETE" });
+    await fetch(apiUrl(`/api/orders/${id}`), { method: "DELETE" });
     await load();
   };
 

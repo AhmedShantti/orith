@@ -1,6 +1,13 @@
 "use client";
 
+// Base URL of the NestJS backend (e.g. http://localhost:4000). Empty string
+// falls back to same-origin relative paths.
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+
+/** Prefix an `/api/...` path with the backend base URL. */
+export function apiUrl(path: string): string {
+  return `${BASE_URL}${path}`;
+}
 
 function authHeaders(): Record<string, string> {
   const token =

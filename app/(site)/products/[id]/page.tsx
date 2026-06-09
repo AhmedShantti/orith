@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/api";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +23,7 @@ export default function ProductDetailsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch(apiUrl("/api/products"));
         const json = (await res.json()) as { products: Product[] };
         if (!cancelled) setProducts(json.products);
       } finally {

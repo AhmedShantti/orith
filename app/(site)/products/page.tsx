@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/api";
 import React, { useState, useMemo, useEffect } from "react";
 import { useLang } from "@/context/LanguageContext";
 import { categories } from "@/data/products";
@@ -17,7 +18,7 @@ export default function ProductsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/products");
+        const res = await fetch(apiUrl("/api/products"));
         const json = (await res.json()) as { products: Product[] };
         if (!cancelled) setProducts(json.products);
       } finally {

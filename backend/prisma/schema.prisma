@@ -1,0 +1,261 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  PENDING_PAYMENT
+  AWAITING_CONFIRMATION
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+  PAYMENT_FAILED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentMethod {
+  MOBILE_WALLET
+  APPLE_PAY
+  CARD
+}
+
+enum CouponType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  VOIDED
+  REFUNDED
+}
+
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  email     String     @unique
+  password  String
+  role      UserRole   @default(CUSTOMER)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  orders    Order[]
+  cartItems CartItem[]
+  reviews   Review[]
+
+  @@index([email])
+}
+
+model Product {
+  id            String      @id @default(cuid())
+  nameEn        String
+  nameAr        String
+  descriptionEn String      @db.Text
+  descriptionAr String      @db.Text
+  price         Float
+  originalPrice Float?
+  image         String
+  sizes         String[]
+  category      String
+  badge         String?
+  notesTop      String[]
+  notesHeart    String[]
+  notesBase     String[]
+  stock         Int         @default(100)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+  reviews    Review[]
+
+  @@index([category])
+}
+
+model Order {
+  id     String      @id @default(cuid())
+  // userId is now optional to support guest checkout. Authenticated checkouts
+  // still link to a User; guests leave this null and rely on the snapshot
+  // customer fields below.
+  userId String?
+  status OrderStatus @default(PENDING)
+
+  // Legacy display field, kept for the admin dashboard. Mirrors totalAmount but
+  // expressed in EGP (totalAmount / 100). New checkout writes both.
+  total Float
+
+  // --- Professional checkout fields (Paymob flow) ---
+  orderNumber String? @unique // human-readable: "ORD-2024-XXXXXX"
+
+  // Customer snapshot (stored even for guests)
+  customerFirstName String?
+  customerLastName  String?
+  customerEmail     String?
+  customerPhone     String?
+
+  // Shipping address
+  shippingAddress1    String?
+  shippingAddress2    String?
+  shippingCity        String?
+  shippingGovernorate String?
+  shippingPostalCode  String?
+  shippingCountry     String? @default("EG")
+
+  // Financial — smallest currency unit (piastres for EGP)
+  subtotal       Int?
+  discountAmount Int?    @default(0)
+  shippingFee    Int?    @default(0)
+  taxAmount      Int?    @default(0)
+  totalAmount    Int?
+  currency       String? @default("EGP")
+
+  // Coupon
+  couponCode String?
+  couponId   String?
+
+  // Payment
+  paymentMethod       PaymentMethod?
+  paymentStatus       PaymentStatus? @default(UNPAID)
+  paymobOrderId       String?
+  paymobTransactionId String?        @unique
+
+  // Metadata
+  notes          String?
+  ipAddress      String?
+  userAgent      String?
+  idempotencyKey String? @unique
+  paidAt         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  coupon       Coupon?              @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+  transactions PaymentTransaction[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderNumber])
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  // productId/relation are now optional: storefront products are served from a
+  // static catalogue and may not exist as DB rows. We always snapshot the
+  // product details below so order history is self-contained.
+  productId String?
+  quantity  Int
+  price     Float // legacy: unit price in EGP (admin display)
+  createdAt DateTime @default(now())
+
+  // --- Snapshot fields captured at order time ---
+  productName String?
+  productSku  String?
+  variantName String?
+  unitPrice   Int? // piastres
+  totalPrice  Int? // unitPrice * quantity, piastres
+  imageUrl    String?
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Coupon {
+  id                String     @id @default(cuid())
+  code              String     @unique
+  type              CouponType
+  value             Int // percentage (0-100) OR fixed amount in piastres
+  minOrderAmount    Int?
+  maxDiscountAmount Int?
+  usageLimit        Int?
+  usageCount        Int        @default(0)
+  perUserLimit      Int?       @default(1)
+  isActive          Boolean    @default(true)
+  validFrom         DateTime?
+  validUntil        DateTime?
+  createdAt         DateTime   @default(now())
+
+  orders Order[]
+
+  @@index([code])
+}
+
+model PaymentTransaction {
+  id                  String            @id @default(cuid())
+  orderId             String
+  paymobTransactionId String            @unique
+  paymobOrderId       String
+  amount              Int // piastres
+  currency            String
+  status              TransactionStatus
+  paymentMethod       String
+  hmacVerified        Boolean           @default(false)
+  rawCallbackData     Json
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  rating    Int
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([userId])
+}

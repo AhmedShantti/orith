@@ -4,6 +4,7 @@
 // state, validates each step, and drives order creation. Field mutations go
 // through useCheckoutStore directly; this hook owns navigation + submission.
 
+import { apiUrl } from "@/lib/api";
 import { useMemo } from "react";
 import { useCart } from "@/context/CartContext";
 import { useCheckoutStore } from "@/store/checkoutStore";
@@ -117,8 +118,9 @@ export function useCheckout() {
   const createOrder = useCb(async (): Promise<CreatedOrder | null> => {
     store.setOrderCreating(true);
     try {
-      const res = await fetch("/api/checkout/create-order", {
+      const res = await fetch(apiUrl("/api/checkout/create-order"), {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           idempotencyKey: state.order.idempotencyKey,

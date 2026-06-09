@@ -1,5 +1,6 @@
 "use client";
 
+import { apiUrl } from "@/lib/api";
 import React, { useEffect, useRef, useState } from "react";
 import StepShell from "./StepShell";
 import { TextField } from "./ui";
@@ -31,7 +32,7 @@ export default function CustomerInfoStep() {
         ? localStorage.getItem("orith_token")
         : null;
     if (!token) return;
-    fetch("/api/auth/me", { headers: { Authorization: `Bearer ${token}` } })
+    fetch(apiUrl("/api/auth/me"), { headers: { Authorization: `Bearer ${token}` } })
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         const user = data?.data ?? data?.user ?? data;

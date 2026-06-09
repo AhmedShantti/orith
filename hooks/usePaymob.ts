@@ -4,6 +4,7 @@
 // the redirect / iframe flow. Server-side only modules (Paymob client) are
 // never imported here — this is purely the client orchestration.
 
+import { apiUrl } from "@/lib/api";
 import { useCallback, useRef, useState } from "react";
 import type { PaymentMethod } from "@/types/order";
 import type { PaymentVerifyResult } from "@/types/payment";
@@ -30,7 +31,7 @@ export function usePaymob() {
       setIsInitiating(true);
       setError(null);
       try {
-        const res = await fetch("/api/payments/initiate", {
+        const res = await fetch(apiUrl("/api/payments/initiate"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ orderId, paymentMethod, walletPhone }),
@@ -76,7 +77,7 @@ export function usePaymentVerification() {
     async (transactionId: string): Promise<PaymentVerifyResult> => {
       try {
         const res = await fetch(
-          `/api/payments/verify/${encodeURIComponent(transactionId)}`,
+          apiUrl(`/api/payments/verify/${encodeURIComponent(transactionId)}`),
           { cache: "no-store" }
         );
         return (await res.json()) as PaymentVerifyResult;

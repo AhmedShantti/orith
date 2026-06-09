@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/api";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Emblem from "@/components/Emblem";
@@ -66,8 +67,8 @@ export default function OverviewPage() {
     (async () => {
       try {
         const [s, o] = await Promise.all([
-          fetch("/api/stats"),
-          fetch("/api/orders"),
+          fetch(apiUrl("/api/stats")),
+          fetch(apiUrl("/api/orders")),
         ]);
         if (!s.ok || !o.ok) throw new Error("Failed to load data");
         const statsData = (await s.json()) as Stats;

@@ -1,5 +1,6 @@
 "use client";
 
+import { apiUrl } from "@/lib/api";
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -18,8 +19,9 @@ export default function OrderConfirmationPage() {
       typeof window !== "undefined"
         ? localStorage.getItem("orith_token")
         : null;
-    fetch(`/api/orders/${orderId}`, {
+    fetch(apiUrl(`/api/orders/${orderId}`), {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      credentials: "include",
       cache: "no-store",
     })
       .then(async (res) => {

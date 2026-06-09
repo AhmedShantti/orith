@@ -1,4 +1,5 @@
 "use client";
+import { apiUrl } from "@/lib/api";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useLang } from "@/context/LanguageContext";
@@ -11,7 +12,7 @@ export default function FeaturedProducts() {
   const [featured, setFeatured] = useState<Product[]>([]);
 
   useEffect(() => {
-    fetch("/api/products?limit=4")
+    fetch(apiUrl("/api/products?limit=4"))
       .then((res) => res.json())
       .then((res) => {
         if (res.success && res.data) {

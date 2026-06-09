@@ -1,5 +1,6 @@
 "use client";
 
+import { apiUrl } from "@/lib/api";
 import React, { useState } from "react";
 import { Check, X } from "lucide-react";
 import { Spinner } from "./ui";
@@ -22,7 +23,7 @@ export default function CouponInput({ subtotal }: CouponInputProps) {
     if (!code) return;
     store.setCouponValidating(true);
     try {
-      const res = await fetch("/api/checkout/validate-coupon", {
+      const res = await fetch(apiUrl("/api/checkout/validate-coupon"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, subtotal }),
