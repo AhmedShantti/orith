@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import { promises as fs } from "fs";
-import path from "path";
+import { Injectable, Logger } from "@nestjs/common";
+import type { Product as DbProduct } from "@prisma/client";
+import { PrismaService } from "../prisma/prisma.service";
 import {
   products as staticProducts,
   offers as staticOffers,
@@ -8,38 +8,59 @@ import {
 } from "./catalogue.data";
 import type { Product, Offer } from "./catalogue.types";
 
-// Admin-created products live in a JSON file (backend/data) so they survive
-// restarts. The static catalogue is the immutable base; custom products prepend.
-const DATA_DIR = path.join(process.cwd(), "data");
-const CUSTOM_PATH = path.join(DATA_DIR, "custom-products.json");
-
+// The catalogue is the static base collection (catalogue.data) PLUS any
+// admin-created products, which now live durably in the Supabase `Product`
+// table (previously they were written to an ephemeral JSON file, so they were
+// lost on every restart/redeploy and never persisted to the database).
 @Injectable()
 export class CatalogueService {
-  async readCustomProducts(): Promise<Product[]> {
-    try {
-      const raw = await fs.readFile(CUSTOM_PATH, "utf-8");
-      return JSON.parse(raw) as Product[];
-    } catch {
-      return [];
-    }
+  private readonly logger = new Logger(CatalogueService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  getStaticProducts(): Product[] {
+    return staticProducts;
   }
 
-  private async writeCustomProducts(products: Product[]): Promise<void> {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.writeFile(CUSTOM_PATH, JSON.stringify(products, null, 2), "utf-8");
+  /** Map a DB product row to the storefront Product shape. */
+  private mapDbProduct(p: DbProduct): Product {
+    return {
+      id: p.id,
+      nameEn: p.nameEn,
+      nameAr: p.nameAr,
+      descriptionEn: p.descriptionEn,
+      descriptionAr: p.descriptionAr,
+      price: p.price,
+      originalPrice: p.originalPrice ?? undefined,
+      image: p.image,
+      sizes: p.sizes,
+      category: p.category,
+      badge: (p.badge as Product["badge"]) ?? undefined,
+      notes: {
+        top: p.notesTop,
+        heart: p.notesHeart,
+        base: p.notesBase,
+      },
+    };
   }
 
+  /** All products: admin-created (DB, newest first) + the static collection. */
   async getAllProducts(): Promise<Product[]> {
-    const custom = await this.readCustomProducts();
-    return [...custom, ...staticProducts];
-  }
-
-  async addProduct(input: Omit<Product, "id">): Promise<Product> {
-    const custom = await this.readCustomProducts();
-    const product: Product = { ...input, id: `c${Date.now().toString(36)}` };
-    custom.unshift(product);
-    await this.writeCustomProducts(custom);
-    return product;
+    try {
+      const db = await this.prisma.product.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+      return [...db.map((p) => this.mapDbProduct(p)), ...staticProducts];
+    } catch (err) {
+      // Keep the storefront alive on a DB hiccup — fall back to the static
+      // collection rather than throwing (which would 500 every product page).
+      this.logger.error(
+        `[${new Date().toISOString()}] [ERROR] [catalogue.getAllProducts]: ${
+          err instanceof Error ? err.message : "unknown"
+        }`
+      );
+      return [...staticProducts];
+    }
   }
 
   getOffers(): Offer[] {

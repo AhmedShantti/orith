@@ -64,6 +64,8 @@ export default function CataloguePage() {
     (async () => {
       try {
         await load();
+      } catch (e) {
+        console.error("[catalogue] failed to load products:", e);
       } finally {
         setLoading(false);
       }
@@ -156,6 +158,7 @@ export default function CataloguePage() {
       setShowForm(false);
       await load();
     } catch (e) {
+      console.error("[catalogue] product creation failed:", e);
       setFormError(e instanceof Error ? e.message : "Error");
     } finally {
       setSaving(false);

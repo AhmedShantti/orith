@@ -2,6 +2,8 @@ import {
   Injectable,
   BadRequestException,
   NotFoundException,
+  InternalServerErrorException,
+  Logger,
 } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CatalogueService } from "../../catalogue/catalogue.service";
@@ -13,6 +15,8 @@ const VALID_BADGES = ["bestseller", "new", "limited", "offer"];
 
 @Injectable()
 export class ProductsService {
+  private readonly logger = new Logger(ProductsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly catalogue: CatalogueService
@@ -63,20 +67,37 @@ export class ProductsService {
         ? (body.badge as Product["badge"])
         : undefined;
 
-    const input: Omit<Product, "id"> = {
-      nameEn,
-      nameAr,
-      descriptionEn: String(body.descriptionEn ?? "").trim(),
-      descriptionAr: String(body.descriptionAr ?? "").trim(),
-      price: Math.round(price),
-      image: String(body.image ?? "/products/bottle-1.png").trim(),
-      sizes,
-      category,
-      ...(badge ? { badge } : {}),
-    };
-
-    const product = await this.catalogue.addProduct(input);
-    return { product };
+    // Persist to the Supabase `Product` table (the same store update/delete
+    // use). Previously this wrote to an ephemeral JSON file, so products were
+    // never durably saved.
+    try {
+      const product = await this.prisma.product.create({
+        data: {
+          nameEn,
+          nameAr,
+          descriptionEn: String(body.descriptionEn ?? "").trim(),
+          descriptionAr: String(body.descriptionAr ?? "").trim(),
+          price: Math.round(price),
+          image: String(body.image ?? "/products/bottle-1.png").trim(),
+          sizes,
+          category,
+          badge: badge ?? null,
+          notesTop: [],
+          notesHeart: [],
+          notesBase: [],
+        },
+      });
+      return { product };
+    } catch (err) {
+      this.logger.error(
+        `[${new Date().toISOString()}] [ERROR] [products.create]: ${
+          err instanceof Error ? err.message : "unknown"
+        }`
+      );
+      throw new InternalServerErrorException({
+        error: "Failed to create product. Please try again.",
+      });
+    }
   }
 
   async getOne(id: string): Promise<ApiResponse<unknown>> {
