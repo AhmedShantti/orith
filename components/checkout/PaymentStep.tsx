@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Wallet } from "lucide-react";
+import { Wallet, Banknote } from "lucide-react";
 import StepShell from "./StepShell";
 import PaymentMethodCard from "./PaymentMethodCard";
 import { TextField } from "./ui";
@@ -51,6 +51,7 @@ export default function PaymentStep() {
 
   const canContinue =
     payment.method === "APPLE_PAY" ||
+    payment.method === "COD" ||
     (payment.method === "MOBILE_WALLET" &&
       walletPhoneSchema.safeParse(payment.walletPhone).success);
 
@@ -119,6 +120,30 @@ export default function PaymentStep() {
           onSelect={() => store.setPaymentMethod("APPLE_PAY")}
           ariaLabel="Pay with Apple Pay"
         />
+
+        <PaymentMethodCard
+          id="cod"
+          label="Cash on Delivery"
+          sublabel="Pay in cash when your order arrives"
+          icon={<Banknote size={26} />}
+          isSelected={payment.method === "COD"}
+          isAvailable
+          onSelect={() => store.setPaymentMethod("COD")}
+          ariaLabel="Pay with Cash on Delivery"
+        />
+
+        {/* COD confirmation note — smooth reveal, no layout jump */}
+        <div
+          className="overflow-hidden transition-all duration-300 ease-in-out"
+          style={{
+            maxHeight: payment.method === "COD" ? 80 : 0,
+            opacity: payment.method === "COD" ? 1 : 0,
+          }}
+        >
+          <p className="text-sm font-body text-obsidian/70 bg-ivory border border-obsidian/12 px-4 py-3">
+            You will pay in cash when your order arrives.
+          </p>
+        </div>
       </div>
     </StepShell>
   );

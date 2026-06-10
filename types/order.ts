@@ -20,7 +20,7 @@ export type PaymentStatus =
   | "REFUNDED"
   | "PARTIALLY_REFUNDED";
 
-export type PaymentMethod = "MOBILE_WALLET" | "APPLE_PAY" | "CARD";
+export type PaymentMethod = "MOBILE_WALLET" | "APPLE_PAY" | "CARD" | "COD";
 
 export interface OrderItem {
   id: string;

@@ -1,7 +1,7 @@
 // Checkout-flow types: the in-page multi-step state machine and its actions.
 
 import { AppliedCoupon } from "./coupon";
-import { OrderStatus, PaymentMethod } from "./order";
+import { OrderStatus, PaymentMethod, PaymentStatus } from "./order";
 
 export type CheckoutStep = 1 | 2 | 3 | 4 | 5;
 
@@ -79,6 +79,8 @@ export interface CreatedOrder {
   totalAmount: number;
   currency: string;
   status: OrderStatus;
+  paymentMethod?: PaymentMethod | null;
+  paymentStatus?: PaymentStatus | null;
   breakdown: {
     subtotal: number;
     discountAmount: number;

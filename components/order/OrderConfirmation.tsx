@@ -130,8 +130,15 @@ export default function OrderConfirmation({ order }: { order: Order }) {
               ? "Mobile Wallet"
               : order.paymentMethod === "APPLE_PAY"
               ? "Apple Pay"
+              : order.paymentMethod === "COD"
+              ? "Cash on Delivery"
               : "—"}
           </p>
+          {order.paymentMethod === "COD" && (
+            <p className="text-sm font-body text-obsidian/55 mt-1">
+              You will pay in cash when your order arrives.
+            </p>
+          )}
           <p className="text-sm font-body text-obsidian/55 mt-2">
             Estimated delivery: {estimatedDelivery(order.shippingGovernorate)}
           </p>

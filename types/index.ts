@@ -50,7 +50,7 @@ export type PaymentStatus =
   | "FAILED"
   | "REFUNDED"
   | "PARTIALLY_REFUNDED";
-export type PaymentMethod = "MOBILE_WALLET" | "APPLE_PAY" | "CARD";
+export type PaymentMethod = "MOBILE_WALLET" | "APPLE_PAY" | "CARD" | "COD";
 
 export interface User {
   id: string;

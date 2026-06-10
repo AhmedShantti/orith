@@ -181,9 +181,14 @@ export class CheckoutService {
         governorate: data.shipping.governorate,
       });
 
+      // Cash on Delivery needs no payment processing: the order is confirmed
+      // immediately (PROCESSING) and payment is collected on delivery (UNPAID).
+      // Online methods stay PENDING_PAYMENT until the Paymob flow completes.
+      const isCod = data.paymentMethod === "COD";
+
       const year = new Date().getFullYear();
       const orderData = {
-        status: "PENDING_PAYMENT" as const,
+        status: isCod ? ("PROCESSING" as const) : ("PENDING_PAYMENT" as const),
         total: piastresToEgp(totals.totalAmount),
         customerFirstName: data.customer.firstName,
         customerLastName: data.customer.lastName,
@@ -315,13 +320,20 @@ export class CheckoutService {
     subtotal: number | null;
     discountAmount: number | null;
     shippingFee: number | null;
+    status: string;
+    paymentMethod: string | null;
+    paymentStatus: string | null;
   }) {
     return {
       id: order.id,
       orderNumber: order.orderNumber ?? "",
       totalAmount: order.totalAmount ?? 0,
       currency: order.currency ?? CURRENCY,
-      status: "PENDING_PAYMENT",
+      status: order.status,
+      // Surfaced so the frontend can show the correct confirmation message
+      // (e.g. the COD "pay on delivery" note vs. an online-payment redirect).
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.paymentStatus,
       breakdown: {
         subtotal: order.subtotal ?? 0,
         discountAmount: order.discountAmount ?? 0,

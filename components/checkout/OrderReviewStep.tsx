@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { Spinner } from "./ui";
 import { useCheckout } from "@/hooks/useCheckout";
 import { usePaymob } from "@/hooks/usePaymob";
+import { useCart } from "@/context/CartContext";
 import { useLang } from "@/context/LanguageContext";
 import { egpToPiastres, formatPiastres } from "@/lib/checkout/calculations";
 import { maskWalletNumber } from "@/lib/checkout/orderHelpers";
+import { CHECKOUT_STATE_KEY } from "@/lib/checkout/constants";
 
 function ReviewSection({
   title,
@@ -38,6 +40,7 @@ function ReviewSection({
 export default function OrderReviewStep() {
   const { state, store, totals, cartItems, createOrder } = useCheckout();
   const { initiate } = usePaymob();
+  const { clearCart } = useCart();
   const { lang } = useLang();
   const router = useRouter();
 
@@ -68,6 +71,23 @@ export default function OrderReviewStep() {
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, [applePayIframe, router]);
+
+  // COD orders are already confirmed server-side (no payment processing), so we
+  // go straight to the confirmation page; online methods run the Paymob flow.
+  async function proceedAfterOrder(orderId: string) {
+    if (payment.method === "COD") {
+      setBusyLabel("Confirming your order…");
+      clearCart();
+      try {
+        sessionStorage.removeItem(CHECKOUT_STATE_KEY);
+      } catch {
+        /* ignore */
+      }
+      router.push(`/order/${orderId}/confirmation`);
+      return;
+    }
+    await runPayment(orderId);
+  }
 
   async function runPayment(orderId: string) {
     setBusyLabel("Redirecting to payment…");
@@ -104,7 +124,7 @@ export default function OrderReviewStep() {
 
     // Reuse an already-created order (retry path) without recreating it.
     if (orderIdRef.current) {
-      await runPayment(orderIdRef.current);
+      await proceedAfterOrder(orderIdRef.current);
       return;
     }
 
@@ -116,7 +136,7 @@ export default function OrderReviewStep() {
     }
     orderIdRef.current = order.id;
     setLocked(true); // an order now exists; never allow a second create
-    await runPayment(order.id);
+    await proceedAfterOrder(order.id);
   }
 
   const placeError = state.order.createError ?? state.paymentInitiation.error;
@@ -170,7 +190,11 @@ export default function OrderReviewStep() {
 
         <ReviewSection title="Payment Method" onEdit={() => store.setCurrentStep(4)}>
           <p className="text-sm font-body text-obsidian/80">
-            {payment.method === "MOBILE_WALLET" ? "Mobile Wallet" : "Apple Pay"}
+            {payment.method === "MOBILE_WALLET"
+              ? "Mobile Wallet"
+              : payment.method === "APPLE_PAY"
+              ? "Apple Pay"
+              : "Cash on Delivery"}
             {payment.method === "MOBILE_WALLET" && payment.walletPhone && (
               <span className="text-obsidian/55">
                 {" "}
@@ -178,6 +202,11 @@ export default function OrderReviewStep() {
               </span>
             )}
           </p>
+          {payment.method === "COD" && (
+            <p className="text-xs font-body text-obsidian/55 mt-1">
+              You will pay in cash when your order arrives.
+            </p>
+          )}
         </ReviewSection>
 
         <ReviewSection title="Order Summary" onEdit={() => store.setCurrentStep(3)}>
@@ -267,7 +296,9 @@ export default function OrderReviewStep() {
               <span aria-live="polite">{busyLabel}</span>
             </>
           ) : placeError ? (
-            "Try Payment Again"
+            "Try Again"
+          ) : payment.method === "COD" ? (
+            "Place Order"
           ) : (
             "Place Order & Pay"
           )}

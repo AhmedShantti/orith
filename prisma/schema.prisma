@@ -39,6 +39,7 @@ enum PaymentMethod {
   MOBILE_WALLET
   APPLE_PAY
   CARD
+  COD
 }
 
 enum CouponType {

@@ -57,7 +57,10 @@ export const createOrderSchema = z.object({
   shipping: shippingSchema,
   items: z.array(lineItemSchema).min(1, "Cart is empty"),
   couponCode: z.string().trim().optional().or(z.literal("")),
-  paymentMethod: z.enum(["MOBILE_WALLET", "APPLE_PAY"]),
+  // Accepted payment methods. (Zod enum is this project's equivalent of a
+  // class-validator @IsIn(['MOBILE_WALLET', 'COD', ...]) check.) COD needs no
+  // payment processing; the wallet phone is only required for MOBILE_WALLET.
+  paymentMethod: z.enum(["MOBILE_WALLET", "APPLE_PAY", "COD"]),
   walletPhone: z.string().trim().optional().or(z.literal("")),
 }).refine(
   (data) =>
