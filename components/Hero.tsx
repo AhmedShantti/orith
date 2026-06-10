@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useLang } from "@/context/LanguageContext";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { products } from "@/data/products";
 import Emblem from "./Emblem";
 
@@ -11,14 +12,46 @@ const HERO_BOTTLES = products.slice(0, 8);
 
 export default function Hero() {
   const { t, lang } = useLang();
+  const s = useSiteSettings();
   const [selected, setSelected] = useState(0);
 
   const selectedProduct = HERO_BOTTLES[selected];
   const selectedName =
     lang === "ar" ? selectedProduct.nameAr : selectedProduct.nameEn;
 
+  // Editable hero content (falls back to the built-in copy).
+  const siteName = s.text("site_name", "ORITH");
+  const heroHeadline = s.text("hero_headline", t.hero.headline);
+  const heroSub = s.text("hero_subheadline", "");
+  const ctaLabel = s.text("hero_cta_label", t.hero.cta);
+  const ctaUrl = s.get("hero_cta_url") || `/products/${selectedProduct.id}`;
+  const bgImage = s.image("hero_background_image");
+  const overlayColor = s.get("hero_overlay_color", "#0C0B0A");
+  const overlayOpacity = Math.min(
+    1,
+    Math.max(0, parseFloat(s.get("hero_overlay_opacity", "0.5")) || 0.5)
+  );
+
   return (
     <section className="hero-dark relative min-h-screen flex flex-col items-center overflow-hidden text-ivory">
+      {/* Optional background image + overlay */}
+      {bgImage && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={bgImage}
+            alt=""
+            aria-hidden
+            className="absolute inset-0 w-full h-full object-cover z-0"
+          />
+          <div
+            className="absolute inset-0 z-0 pointer-events-none"
+            style={{ backgroundColor: overlayColor, opacity: overlayOpacity }}
+            aria-hidden
+          />
+        </>
+      )}
+
       {/* Light beam from above */}
       <div className="hero-light-beam" aria-hidden />
 
@@ -53,11 +86,24 @@ export default function Hero() {
           className="font-display text-3xl sm:text-4xl tracking-[0.4em] text-ivory"
           style={{ fontFamily: "var(--font-cinzel)", fontWeight: 600 }}
         >
-          ORITH
+          {siteName}
         </h1>
         <p className="text-[9px] sm:text-[10px] tracking-[0.5em] uppercase text-ivory/45 font-body font-light mt-3">
           Maison de Parfum
         </p>
+        {heroHeadline && (
+          <h2
+            className="display text-xl sm:text-2xl text-ivory/90 text-center mt-6 max-w-2xl whitespace-pre-line px-6"
+            style={{ fontWeight: 500 }}
+          >
+            {heroHeadline}
+          </h2>
+        )}
+        {heroSub && (
+          <p className="accent-serif text-ivory/55 text-base sm:text-lg text-center mt-4 max-w-xl px-6 leading-relaxed">
+            {heroSub}
+          </p>
+        )}
         {/* tiny gold divider */}
         <div className="mt-6 flex items-center gap-3 text-ivory/40">
           <span className="w-8 h-px bg-gold/30" />
@@ -168,10 +214,10 @@ export default function Hero() {
           Find your signature fragrance
         </p>
         <Link
-          href={`/products/${selectedProduct.id}`}
+          href={ctaUrl}
           className="group inline-flex items-center gap-3 text-[11px] tracking-[0.45em] uppercase text-ivory font-body font-light pb-2 border-b border-gold/40 hover:border-gold hover:text-gold transition-colors duration-500"
         >
-          <span>{t.hero.cta}</span>
+          <span>{ctaLabel}</span>
           <span className="transition-transform duration-300 group-hover:translate-x-1">
             {lang === "ar" ? "←" : "→"}
           </span>

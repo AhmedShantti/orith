@@ -260,3 +260,16 @@ model Review {
   @@index([productId])
   @@index([userId])
 }
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String?  @db.Text
+  // text | image | url | color | boolean | json
+  type      String   @default("text")
+  section   String?
+  label     String?
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([section])
+}

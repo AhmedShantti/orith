@@ -59,6 +59,15 @@ export const api = {
     return handleResponse<T>(res);
   },
 
+  patch: async <T>(url: string, body: Record<string, unknown>): Promise<T> => {
+    const res = await fetch(`${BASE_URL}${url}`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify(body),
+    });
+    return handleResponse<T>(res);
+  },
+
   delete: async <T>(url: string): Promise<T> => {
     const res = await fetch(`${BASE_URL}${url}`, {
       method: "DELETE",

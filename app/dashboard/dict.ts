@@ -8,7 +8,7 @@ export const dict = {
     loading: "Loading…",
     couldNotLoad: "Could not load data",
 
-    nav: { dashboard: "Dashboard", orders: "Orders", catalogue: "Catalogue" },
+    nav: { dashboard: "Dashboard", orders: "Orders", catalogue: "Catalogue", settings: "Settings" },
 
     kpi: {
       totalSales: "Total Sales",
@@ -144,7 +144,7 @@ export const dict = {
     loading: "جارٍ التحميل…",
     couldNotLoad: "تعذّر تحميل البيانات",
 
-    nav: { dashboard: "لوحة التحكم", orders: "الطلبات", catalogue: "الكتالوج" },
+    nav: { dashboard: "لوحة التحكم", orders: "الطلبات", catalogue: "الكتالوج", settings: "الإعدادات" },
 
     kpi: {
       totalSales: "إجمالي المبيعات",

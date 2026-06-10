@@ -4,11 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLang } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
+import { useSiteSettings } from "@/context/SiteSettingsContext";
 import Emblem from "./Emblem";
+
+interface NavLinkSetting {
+  labelEn: string;
+  labelAr: string;
+  url: string;
+  visible?: boolean;
+}
 
 export default function Navbar() {
   const { t, lang, setLang, dir } = useLang();
   const { totalItems } = useCart();
+  const s = useSiteSettings();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -25,12 +34,28 @@ export default function Navbar() {
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  const links = [
+  // Nav links come from site settings (bilingual + visibility), falling back to
+  // the built-in links if the setting is missing.
+  const fallbackLinks = [
     { href: "/", label: t.nav.home },
     { href: "/products", label: t.nav.products },
     { href: "/offers", label: t.nav.offers },
     { href: "/contact", label: t.nav.contact },
   ];
+  const linkSettings = s.json<NavLinkSetting[]>("navbar_links", []);
+  const links =
+    linkSettings.length > 0
+      ? linkSettings
+          .filter((l) => l.visible !== false)
+          .map((l) => ({
+            href: l.url,
+            label: lang === "ar" ? l.labelAr : l.labelEn,
+          }))
+      : fallbackLinks;
+
+  const showLinks = s.bool("navbar_show_links", true);
+  const navbarLogo = s.image("navbar_logo");
+  const siteName = s.text("site_name", "ORITH");
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -43,7 +68,8 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        style={{ top: "var(--announce-h, 0px)" }}
+        className={`fixed left-0 right-0 z-50 transition-all duration-500 ${
           scrolled
             ? "bg-ivory/92 navbar-blur border-b border-obsidian/10"
             : "bg-transparent"
@@ -53,21 +79,33 @@ export default function Navbar() {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
-              <Emblem size={26} className={`${onHero ? "text-ivory" : "text-crimson"} transition-colors duration-500 flex-shrink-0`} />
-              <span className="flex flex-col items-start leading-none">
-                <span
-                  className={`display text-xl sm:text-2xl tracking-[0.28em] ${fg} transition-colors duration-500`}
-                  style={{ fontWeight: 600 }}
-                >
-                  ORITH
-                </span>
-                <span className={`eyebrow text-[7px] mt-1 ${fgDim} transition-colors duration-500`}>
-                  Maison de Parfum
-                </span>
-              </span>
+              {navbarLogo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={navbarLogo}
+                  alt={siteName}
+                  className="h-9 w-auto object-contain"
+                />
+              ) : (
+                <>
+                  <Emblem size={26} className={`${onHero ? "text-ivory" : "text-crimson"} transition-colors duration-500 flex-shrink-0`} />
+                  <span className="flex flex-col items-start leading-none">
+                    <span
+                      className={`display text-xl sm:text-2xl tracking-[0.28em] ${fg} transition-colors duration-500`}
+                      style={{ fontWeight: 600 }}
+                    >
+                      {siteName}
+                    </span>
+                    <span className={`eyebrow text-[7px] mt-1 ${fgDim} transition-colors duration-500`}>
+                      Maison de Parfum
+                    </span>
+                  </span>
+                </>
+              )}
             </Link>
 
             {/* Desktop Nav */}
+            {showLinks && (
             <nav className="hidden md:flex items-center gap-10">
               {links.map((link) => {
                 const active = isActive(link.href);
@@ -90,6 +128,7 @@ export default function Navbar() {
                 );
               })}
             </nav>
+            )}
 
             {/* Right side */}
             <div className="flex items-center gap-5">

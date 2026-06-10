@@ -14,6 +14,7 @@ import { UploadModule } from "./modules/upload/upload.module";
 import { CheckoutModule } from "./modules/checkout/checkout.module";
 import { PaymentsModule } from "./modules/payments/payments.module";
 import { WebhooksModule } from "./modules/webhooks/webhooks.module";
+import { SiteSettingsModule } from "./modules/site-settings/site-settings.module";
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { WebhooksModule } from "./modules/webhooks/webhooks.module";
     CheckoutModule,
     PaymentsModule,
     WebhooksModule,
+    SiteSettingsModule,
   ],
 })
 export class AppModule {}

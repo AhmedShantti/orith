@@ -7,7 +7,7 @@ import type { ApiResponse, User } from "@/types";
 import Emblem from "@/components/Emblem";
 import { useLang } from "@/context/LanguageContext";
 import { dict } from "./dict";
-import { GridIcon, OrdersIcon, BottleIcon, GlobeIcon } from "./icons";
+import { GridIcon, OrdersIcon, BottleIcon, GlobeIcon, SettingsIcon } from "./icons";
 
 export default function DashboardLayout({
   children,
@@ -68,6 +68,7 @@ export default function DashboardLayout({
     { href: "/dashboard", label: d.nav.dashboard, Icon: GridIcon },
     { href: "/dashboard/orders", label: d.nav.orders, Icon: OrdersIcon },
     { href: "/dashboard/catalogue", label: d.nav.catalogue, Icon: BottleIcon },
+    { href: "/dashboard/settings", label: d.nav.settings, Icon: SettingsIcon },
   ];
 
   const isActive = (href: string) =>
