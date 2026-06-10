@@ -1,7 +1,9 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+import type { ApiResponse, User } from "@/types";
 import Emblem from "@/components/Emblem";
 import { useLang } from "@/context/LanguageContext";
 import { dict } from "./dict";
@@ -13,8 +15,54 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { lang, setLang, dir } = useLang();
   const d = dict[lang];
+
+  // Auth gate: the dashboard is staff-only. Require a valid ADMIN token,
+  // otherwise bounce to the login page.
+  const [authed, setAuthed] = useState(false);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined"
+        ? localStorage.getItem("orith_token")
+        : null;
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+    api
+      .get<ApiResponse<User>>("/api/auth/me")
+      .then((res) => {
+        if (res.success && res.data && res.data.role === "ADMIN") {
+          setAuthed(true);
+        } else {
+          localStorage.removeItem("orith_token");
+          router.replace("/login");
+        }
+      })
+      .catch(() => {
+        localStorage.removeItem("orith_token");
+        router.replace("/login");
+      })
+      .finally(() => setChecking(false));
+  }, [router]);
+
+  function handleLogout() {
+    localStorage.removeItem("orith_token");
+    router.replace("/login");
+  }
+
+  if (checking || !authed) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-5 bg-ivory">
+        <Emblem size={40} className="text-crimson animate-pulse" />
+        <p className="eyebrow text-[10px] text-obsidian/40">{d.loading}</p>
+      </div>
+    );
+  }
 
   const NAV = [
     { href: "/dashboard", label: d.nav.dashboard, Icon: GridIcon },
@@ -75,6 +123,12 @@ export default function DashboardLayout({
             >
               <GlobeIcon size={14} className="shrink-0" />
               <span>{lang === "en" ? "العربية" : "English"}</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="hidden lg:flex items-center gap-2 eyebrow text-[10px] text-ivory/60 hover:text-ivory border border-ivory/20 hover:border-crimson-light px-3 py-2 transition-colors w-full justify-center lg:mb-5"
+            >
+              {lang === "en" ? "Sign out" : "تسجيل الخروج"}
             </button>
             <p className="hidden lg:block eyebrow text-[8px] text-ivory/35 leading-relaxed">
               ORITH

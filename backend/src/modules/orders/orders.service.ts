@@ -4,142 +4,90 @@ import {
   NotFoundException,
   ForbiddenException,
 } from "@nestjs/common";
-import { promises as fs } from "fs";
-import path from "path";
 import { PrismaService } from "../../prisma/prisma.service";
-import { CatalogueService } from "../../catalogue/catalogue.service";
 import { ok } from "../../common/api-response";
 import type { JWTPayload } from "../../common/auth/jwt.util";
 
-// ---- Legacy file-JSON order (used by the simple dashboard order list) ----
-export interface LegacyOrder {
+// Statuses that count toward sales totals (a confirmed sale, incl. COD).
+const REVENUE_STATUSES = ["PROCESSING", "SHIPPED", "DELIVERED"];
+
+const VALID_ORDER_STATUSES = [
+  "PENDING",
+  "PENDING_PAYMENT",
+  "AWAITING_CONFIRMATION",
+  "PROCESSING",
+  "SHIPPED",
+  "DELIVERED",
+  "CANCELLED",
+  "REFUNDED",
+  "PAYMENT_FAILED",
+];
+
+// Flat row shape the dashboard consumes.
+export interface DashboardOrderRow {
   id: string;
+  orderNumber: string | null;
   customerName: string;
-  productId: string;
   productName: string;
-  quantity: number;
-  unitPrice: number;
-  total: number;
   size: string;
-  status: "pending" | "paid" | "shipped" | "delivered" | "cancelled";
+  quantity: number;
+  total: number;
+  status: string;
+  paymentMethod: string | null;
+  paymentStatus: string | null;
   createdAt: string;
 }
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const ORDERS_PATH = path.join(DATA_DIR, "orders.json");
-const LEGACY_STATUSES: LegacyOrder["status"][] = [
-  "pending",
-  "paid",
-  "shipped",
-  "delivered",
-  "cancelled",
-];
-
 @Injectable()
 export class OrdersService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly catalogue: CatalogueService
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
-  private async readOrders(): Promise<LegacyOrder[]> {
-    try {
-      return JSON.parse(await fs.readFile(ORDERS_PATH, "utf-8")) as LegacyOrder[];
-    } catch {
-      return [];
-    }
-  }
+  // GET /api/orders — real checkout orders from the database, shaped for the
+  // dashboard (summary KPIs + flat rows). Admin-only (guarded in controller).
+  async listDashboard() {
+    const orders = await this.prisma.order.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { items: true, user: { select: { name: true } } },
+    });
 
-  private async writeOrders(orders: LegacyOrder[]): Promise<void> {
-    await fs.mkdir(DATA_DIR, { recursive: true });
-    await fs.writeFile(ORDERS_PATH, JSON.stringify(orders, null, 2), "utf-8");
-  }
+    const rows: DashboardOrderRow[] = orders.map((o) => {
+      const items = o.items ?? [];
+      const first = items[0];
+      const extra = items.length > 1 ? ` +${items.length - 1} more` : "";
+      const customerName =
+        `${o.customerFirstName ?? ""} ${o.customerLastName ?? ""}`.trim() ||
+        o.user?.name ||
+        "Guest";
+      return {
+        id: o.id,
+        orderNumber: o.orderNumber,
+        customerName,
+        productName: first ? `${first.productName ?? "Item"}${extra}` : "—",
+        size: first?.variantName ?? "",
+        quantity: items.reduce((s, i) => s + i.quantity, 0),
+        total: o.total,
+        status: o.status,
+        paymentMethod: o.paymentMethod,
+        paymentStatus: o.paymentStatus,
+        createdAt: o.createdAt.toISOString(),
+      };
+    });
 
-  private summarize(orders: LegacyOrder[]) {
-    const active = orders.filter((o) => o.status !== "cancelled");
-    const revenue = active.reduce((s, o) => s + o.total, 0);
-    const unitsSold = active.reduce((s, o) => s + o.quantity, 0);
+    const counted = orders.filter((o) => REVENUE_STATUSES.includes(o.status));
+    const revenue = counted.reduce((s, o) => s + o.total, 0);
+    const unitsSold = counted.reduce(
+      (s, o) => s + (o.items ?? []).reduce((q, i) => q + i.quantity, 0),
+      0
+    );
+
     return {
       orderCount: orders.length,
       revenue,
       unitsSold,
       avgOrderValue: orders.length ? Math.round(revenue / orders.length) : 0,
+      orders: rows,
     };
   }
-
-  // GET /api/orders
-  async listLegacy() {
-    const orders = await this.readOrders();
-    const sorted = [...orders].sort((a, b) =>
-      b.createdAt.localeCompare(a.createdAt)
-    );
-    return { ...this.summarize(orders), orders: sorted };
-  }
-
-  // POST /api/orders
-  async createLegacy(body: Record<string, unknown>) {
-    const customerName = String(body.customerName ?? "").trim();
-    const productId = String(body.productId ?? "").trim();
-    const quantity = Math.max(1, Math.floor(Number(body.quantity) || 1));
-    const status = String(body.status ?? "pending") as LegacyOrder["status"];
-
-    if (!customerName) {
-      throw new BadRequestException({ error: "Customer name is required" });
-    }
-    const product = (await this.catalogue.getAllProducts()).find(
-      (p) => p.id === productId
-    );
-    if (!product) {
-      throw new BadRequestException({ error: "Unknown product" });
-    }
-    const size = String(body.size ?? product.sizes[0] ?? "");
-    const unitPrice = product.price;
-
-    const orders = await this.readOrders();
-    const order: LegacyOrder = {
-      id: `ord_${Date.now().toString(36)}${Math.floor(Math.random() * 1e4)
-        .toString(36)
-        .padStart(3, "0")}`,
-      customerName,
-      productId: product.id,
-      productName: product.nameEn,
-      quantity,
-      unitPrice,
-      total: unitPrice * quantity,
-      size,
-      status,
-      createdAt: new Date().toISOString(),
-    };
-    orders.push(order);
-    await this.writeOrders(orders);
-    return { order };
-  }
-
-  // PATCH /api/orders/:id  (legacy status update)
-  async patchLegacy(id: string, status: string) {
-    if (!LEGACY_STATUSES.includes(status as LegacyOrder["status"])) {
-      throw new BadRequestException({ error: "Invalid status" });
-    }
-    const orders = await this.readOrders();
-    const order = orders.find((o) => o.id === id);
-    if (!order) throw new NotFoundException({ error: "Order not found" });
-    order.status = status as LegacyOrder["status"];
-    await this.writeOrders(orders);
-    return { order };
-  }
-
-  // DELETE /api/orders/:id (legacy)
-  async deleteLegacy(id: string) {
-    const orders = await this.readOrders();
-    const next = orders.filter((o) => o.id !== id);
-    if (next.length === orders.length) {
-      throw new NotFoundException({ error: "Order not found" });
-    }
-    await this.writeOrders(next);
-    return { ok: true };
-  }
-
-  // ---- Prisma checkout orders ----
 
   // GET /api/orders/:id with ownership check.
   async getPrismaOrder(
@@ -185,18 +133,7 @@ export class OrdersService {
 
   // PUT /api/orders/:id (admin status update).
   async updatePrismaStatus(id: string, status: string) {
-    const VALID = [
-      "PENDING",
-      "PENDING_PAYMENT",
-      "AWAITING_CONFIRMATION",
-      "PROCESSING",
-      "SHIPPED",
-      "DELIVERED",
-      "CANCELLED",
-      "REFUNDED",
-      "PAYMENT_FAILED",
-    ];
-    if (!VALID.includes(status)) {
+    if (!VALID_ORDER_STATUSES.includes(status)) {
       throw new BadRequestException({
         success: false,
         data: null,

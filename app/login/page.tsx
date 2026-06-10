@@ -30,7 +30,7 @@ export default function LoginPage() {
       if (data.success && data.data) {
         localStorage.setItem("orith_token", data.data.token);
         if (data.data.user.role === "ADMIN") {
-          router.push("/admin/dashboard");
+          router.push("/dashboard");
         } else {
           router.push("/");
         }

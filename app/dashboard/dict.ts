@@ -97,14 +97,26 @@ export const dict = {
       fragrance: "Fragrance",
       category: "Category",
       price: "Price",
+      order: "Order",
+      payment: "Payment",
     },
 
     status: {
-      pending: "Pending",
-      paid: "Paid",
-      shipped: "Shipped",
-      delivered: "Delivered",
-      cancelled: "Cancelled",
+      PENDING: "Pending",
+      PENDING_PAYMENT: "Pending Payment",
+      AWAITING_CONFIRMATION: "Awaiting Confirmation",
+      PROCESSING: "Processing",
+      SHIPPED: "Shipped",
+      DELIVERED: "Delivered",
+      CANCELLED: "Cancelled",
+      REFUNDED: "Refunded",
+      PAYMENT_FAILED: "Payment Failed",
+    },
+    payment: {
+      MOBILE_WALLET: "Mobile Wallet",
+      APPLE_PAY: "Apple Pay",
+      COD: "Cash on Delivery",
+      CARD: "Card",
     },
 
     badge: {
@@ -221,14 +233,26 @@ export const dict = {
       fragrance: "العطر",
       category: "الفئة",
       price: "السعر",
+      order: "الطلب",
+      payment: "الدفع",
     },
 
     status: {
-      pending: "قيد الانتظار",
-      paid: "مدفوع",
-      shipped: "تم الشحن",
-      delivered: "تم التوصيل",
-      cancelled: "ملغي",
+      PENDING: "قيد الانتظار",
+      PENDING_PAYMENT: "بانتظار الدفع",
+      AWAITING_CONFIRMATION: "بانتظار التأكيد",
+      PROCESSING: "قيد المعالجة",
+      SHIPPED: "تم الشحن",
+      DELIVERED: "تم التوصيل",
+      CANCELLED: "ملغي",
+      REFUNDED: "مسترد",
+      PAYMENT_FAILED: "فشل الدفع",
+    },
+    payment: {
+      MOBILE_WALLET: "محفظة إلكترونية",
+      APPLE_PAY: "Apple Pay",
+      COD: "الدفع عند الاستلام",
+      CARD: "بطاقة",
     },
 
     badge: {

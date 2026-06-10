@@ -1,5 +1,5 @@
 "use client";
-import { apiUrl } from "@/lib/api";
+import { api, apiUrl } from "@/lib/api";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Emblem from "@/components/Emblem";
@@ -27,11 +27,14 @@ interface Stats {
 
 interface OrderRow {
   id: string;
+  orderNumber: string | null;
   customerName: string;
   productName: string;
   quantity: number;
   total: number;
   status: string;
+  paymentMethod: string | null;
+  paymentStatus: string | null;
   createdAt: string;
 }
 
@@ -46,11 +49,15 @@ interface OrdersResponse {
 const fmt = (n: number) => n.toLocaleString();
 
 const statusStyle: Record<string, string> = {
-  pending: "text-amber-700 border-amber-700/30",
-  paid: "text-emerald-700 border-emerald-700/30",
-  shipped: "text-sky-700 border-sky-700/30",
-  delivered: "text-crimson border-crimson/30",
-  cancelled: "text-obsidian/40 border-obsidian/20",
+  PENDING: "text-obsidian/50 border-obsidian/20",
+  PENDING_PAYMENT: "text-amber-700 border-amber-700/30",
+  AWAITING_CONFIRMATION: "text-sky-700 border-sky-700/30",
+  PROCESSING: "text-emerald-700 border-emerald-700/30",
+  SHIPPED: "text-sky-700 border-sky-700/30",
+  DELIVERED: "text-crimson border-crimson/30",
+  CANCELLED: "text-obsidian/40 border-obsidian/20",
+  REFUNDED: "text-orange-700 border-orange-700/30",
+  PAYMENT_FAILED: "text-red-700 border-red-700/30",
 };
 
 export default function OverviewPage() {
@@ -66,13 +73,12 @@ export default function OverviewPage() {
     let cancelled = false;
     (async () => {
       try {
-        const [s, o] = await Promise.all([
+        const [s, ordersData] = await Promise.all([
           fetch(apiUrl("/api/stats")),
-          fetch(apiUrl("/api/orders")),
+          api.get<OrdersResponse>("/api/orders"),
         ]);
-        if (!s.ok || !o.ok) throw new Error("Failed to load data");
+        if (!s.ok) throw new Error("Failed to load data");
         const statsData = (await s.json()) as Stats;
-        const ordersData = (await o.json()) as OrdersResponse;
         if (cancelled) return;
         setStats(statsData);
         setOrders(ordersData);
@@ -136,7 +142,7 @@ export default function OverviewPage() {
           href="/dashboard/orders"
           className="btn-crimson text-[10px] self-start md:self-auto"
         >
-          {d.overview.newOrder}
+          {d.nav.orders}
         </Link>
       </div>
 

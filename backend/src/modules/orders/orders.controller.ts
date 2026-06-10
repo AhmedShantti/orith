@@ -1,12 +1,8 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
-  HttpCode,
   Param,
-  Patch,
-  Post,
   Put,
   Req,
   UseGuards,
@@ -27,29 +23,14 @@ const ORDER_ACCESS_COOKIE = "orith_order_access";
 export class OrdersController {
   constructor(private readonly orders: OrdersService) {}
 
-  // --- Legacy file-JSON (dashboard) ---
+  // List real checkout orders for the dashboard (admin only).
   @Get()
+  @UseGuards(AdminGuard)
   list() {
-    return this.orders.listLegacy();
+    return this.orders.listDashboard();
   }
 
-  @Post()
-  @HttpCode(201)
-  create(@Body() body: Record<string, unknown>) {
-    return this.orders.createLegacy(body);
-  }
-
-  @Patch(":id")
-  patch(@Param("id") id: string, @Body() body: { status?: string }) {
-    return this.orders.patchLegacy(id, String(body?.status ?? ""));
-  }
-
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.orders.deleteLegacy(id);
-  }
-
-  // --- Prisma checkout orders ---
+  // Single order with ownership check (admin, owner, or guest access cookie).
   @Get(":id")
   @UseGuards(OptionalAuthGuard)
   getOne(
@@ -63,6 +44,7 @@ export class OrdersController {
     return this.orders.getPrismaOrder(id, user, cookieIds);
   }
 
+  // Admin status update.
   @Put(":id")
   @UseGuards(AdminGuard)
   updateStatus(@Param("id") id: string, @Body() body: { status?: string }) {
