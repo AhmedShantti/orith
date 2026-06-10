@@ -18,17 +18,29 @@ export interface SiteSettingsData {
   sections: Record<string, SiteSettingRecord[]>;
 }
 
+import { cache } from "react";
+
 const EMPTY: SiteSettingsData = { map: {}, sections: {} };
 
 // Revalidate window (seconds) for the cached settings fetch.
 const REVALIDATE = 60;
 
-export async function getSiteSettings(): Promise<SiteSettingsData> {
+// `cache` dedupes the call within a single render (root layout +
+// generateMetadata both call it).
+export const getSiteSettings = cache(async function getSiteSettings(): Promise<SiteSettingsData> {
   const base = process.env.NEXT_PUBLIC_API_URL || "";
   if (!base) return EMPTY;
+
+  // Hard timeout so an unreachable/slow backend can never hang a build or a
+  // request — we just fall back to defaults. (A hanging fetch here would time
+  // out static page generation on Vercel.)
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 4000);
+
   try {
     const res = await fetch(`${base}/api/site-settings`, {
       next: { revalidate: REVALIDATE, tags: ["site-settings"] },
+      signal: controller.signal,
     });
     if (!res.ok) return EMPTY;
     const json = (await res.json()) as {
@@ -42,5 +54,8 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
     };
   } catch {
     return EMPTY;
+  } finally {
+    clearTimeout(timer);
   }
-}
+});
+
