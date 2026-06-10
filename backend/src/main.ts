@@ -23,9 +23,10 @@ async function bootstrap() {
   });
 
   const port = parseInt(process.env.PORT || "4000", 10);
-  await app.listen(port);
+  // Bind to 0.0.0.0 so PaaS hosts (Render, Railway, etc.) can detect the port.
+  await app.listen(port, "0.0.0.0");
   new Logger("Bootstrap").log(
-    `ORITH API listening on http://localhost:${port}/api (CORS: ${frontendOrigin})`
+    `ORITH API listening on port ${port}/api (CORS: ${frontendOrigin})`
   );
 }
 
