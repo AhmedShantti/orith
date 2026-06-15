@@ -44,10 +44,17 @@ export class OrdersController {
     return this.orders.getPrismaOrder(id, user, cookieIds);
   }
 
-  // Admin status update.
+  // Admin status / payment-status update.
   @Put(":id")
   @UseGuards(AdminGuard)
-  updateStatus(@Param("id") id: string, @Body() body: { status?: string }) {
-    return this.orders.updatePrismaStatus(id, String(body?.status ?? ""));
+  updateStatus(
+    @Param("id") id: string,
+    @Body() body: { status?: string; paymentStatus?: string }
+  ) {
+    return this.orders.updatePrismaStatus(
+      id,
+      String(body?.status ?? ""),
+      body?.paymentStatus ? String(body.paymentStatus) : undefined
+    );
   }
 }

@@ -23,6 +23,14 @@ const VALID_ORDER_STATUSES = [
   "PAYMENT_FAILED",
 ];
 
+const VALID_PAYMENT_STATUSES = [
+  "UNPAID",
+  "PAID",
+  "FAILED",
+  "REFUNDED",
+  "PARTIALLY_REFUNDED",
+];
+
 // Flat row shape the dashboard consumes.
 export interface DashboardOrderRow {
   id: string;
@@ -132,18 +140,44 @@ export class OrdersService {
   }
 
   // PUT /api/orders/:id (admin status update).
-  async updatePrismaStatus(id: string, status: string) {
-    if (!VALID_ORDER_STATUSES.includes(status)) {
+  async updatePrismaStatus(
+    id: string,
+    status: string,
+    paymentStatus?: string
+  ) {
+    if (status && !VALID_ORDER_STATUSES.includes(status)) {
       throw new BadRequestException({
         success: false,
         data: null,
         error: "Invalid status",
       });
     }
+    if (paymentStatus && !VALID_PAYMENT_STATUSES.includes(paymentStatus)) {
+      throw new BadRequestException({
+        success: false,
+        data: null,
+        error: "Invalid payment status",
+      });
+    }
+    if (!status && !paymentStatus) {
+      throw new BadRequestException({
+        success: false,
+        data: null,
+        error: "Nothing to update",
+      });
+    }
     try {
       const updated = await this.prisma.order.update({
         where: { id },
-        data: { status: status as never },
+        data: {
+          ...(status ? { status: status as never } : {}),
+          ...(paymentStatus
+            ? {
+                paymentStatus: paymentStatus as never,
+                ...(paymentStatus === "PAID" ? { paidAt: new Date() } : {}),
+              }
+            : {}),
+        },
         include: {
           user: {
             select: {

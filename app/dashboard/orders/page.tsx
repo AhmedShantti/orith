@@ -1,6 +1,7 @@
 "use client";
 import { api } from "@/lib/api";
 import React, { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Emblem from "@/components/Emblem";
 import { useLang } from "@/context/LanguageContext";
 import { dict } from "../dict";
@@ -58,6 +59,7 @@ const statusStyle: Record<string, string> = {
 export default function OrdersPage() {
   const { lang } = useLang();
   const d = dict[lang];
+  const router = useRouter();
 
   const [data, setData] = useState<OrdersResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -189,7 +191,8 @@ export default function OrdersPage() {
               {data?.orders.map((o) => (
                 <tr
                   key={o.id}
-                  className="border-b border-obsidian/8 hover:bg-crimson/[0.03] transition-colors"
+                  onClick={() => router.push(`/dashboard/orders/${o.id}`)}
+                  className="border-b border-obsidian/8 hover:bg-crimson/[0.03] transition-colors cursor-pointer"
                 >
                   <td className="px-5 py-4">
                     <p className="font-body text-xs text-obsidian">
@@ -224,7 +227,7 @@ export default function OrdersPage() {
                       {d.egp}
                     </span>
                   </td>
-                  <td className="px-5 py-4">
+                  <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                     <select
                       value={o.status}
                       disabled={savingId === o.id}

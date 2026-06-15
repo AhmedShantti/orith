@@ -114,6 +114,7 @@ export interface Order {
   paymentMethod?: PaymentMethod | null;
   paymentStatus?: PaymentStatus | null;
   paidAt?: Date | null;
+  notes?: string | null;
 }
 
 export interface OrderItem {
