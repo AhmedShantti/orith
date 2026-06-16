@@ -40,6 +40,38 @@ export class CatalogueService {
     return staticProducts;
   }
 
+  /** Find a built-in (static) product by id. */
+  findStaticById(id: string): Product | undefined {
+    return staticProducts.find((p) => p.id === id);
+  }
+
+  /**
+   * Map a built-in product into the DB Product field shape, so a static
+   * product can be materialized into the `Product` table when it is first
+   * edited (a "DB override" that keeps the original id).
+   */
+  staticToDbFields(p: Product) {
+    return {
+      nameEn: p.nameEn,
+      nameAr: p.nameAr,
+      descriptionEn: p.descriptionEn,
+      descriptionAr: p.descriptionAr,
+      price: p.price,
+      originalPrice: p.originalPrice ?? null,
+      image: p.image,
+      sizes: p.sizes,
+      category: p.category,
+      badge: p.badge ?? null,
+      brand: null as string | null,
+      rating: null as number | null,
+      notesTop: p.notes?.top ?? [],
+      notesHeart: p.notes?.heart ?? [],
+      notesBase: p.notes?.base ?? [],
+      noteImages: p.noteImages ?? {},
+      stock: 100,
+    };
+  }
+
   /** Map a DB product row to the storefront Product shape. */
   private mapDbProduct(p: DbProduct): Product {
     return {
@@ -67,13 +99,27 @@ export class CatalogueService {
     };
   }
 
-  /** All products: admin-created (DB, newest first) + the static collection. */
+  /**
+   * All products: admin-created (DB, newest first), then the static base
+   * collection. Any static product that has been edited has a DB row with the
+   * same id — that override replaces the file version, so built-in products are
+   * fully editable while remaining visible by default.
+   */
   async getAllProducts(): Promise<Product[]> {
     try {
       const db = await this.prisma.product.findMany({
         orderBy: { createdAt: "desc" },
       });
-      return [...db.map((p) => this.mapDbProduct(p)), ...staticProducts];
+      const dbMapped = db.map((p) => this.mapDbProduct(p));
+      const dbById = new Map(dbMapped.map((p) => [p.id, p]));
+      const staticIds = new Set(staticProducts.map((s) => s.id));
+
+      // Admin-created products are DB rows whose id is not a built-in id.
+      const adminProducts = dbMapped.filter((p) => !staticIds.has(p.id));
+      // Built-in collection, with edited entries swapped for their DB override.
+      const baseProducts = staticProducts.map((s) => dbById.get(s.id) ?? s);
+
+      return [...adminProducts, ...baseProducts];
     } catch (err) {
       // Keep the storefront alive on a DB hiccup — fall back to the static
       // collection rather than throwing (which would 500 every product page).

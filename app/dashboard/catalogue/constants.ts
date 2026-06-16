@@ -15,11 +15,13 @@ export const inputCls =
 export const labelCls = "eyebrow text-[9px] text-obsidian/45 mb-2 block";
 
 /**
- * Built-in catalogue products use plain numeric ids ("1".."31") and live in a
- * static file — they have no database row, so they can't be edited or deleted.
- * Admin-created products use cuid ids and are fully manageable.
+ * Built-in catalogue products use plain numeric ids ("1".."31") and ship in a
+ * static file. They are fully editable — an edit materializes a DB override
+ * with the same id — but they can't be permanently deleted (the file always
+ * re-supplies them), so the delete action is reserved for admin-created
+ * products (cuid ids).
  */
-export const isEditableProductId = (id: string): boolean => !/^\d+$/.test(id);
+export const isBuiltInProductId = (id: string): boolean => /^\d+$/.test(id);
 
 /** Comma-separated input → clean string[]. */
 export const splitNotes = (v: string): string[] =>

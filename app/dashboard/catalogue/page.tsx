@@ -13,7 +13,7 @@ import {
   CATEGORY_OPTIONS,
   EXISTING_IMAGES,
   inputCls,
-  isEditableProductId,
+  isBuiltInProductId,
   labelCls,
   splitNotes,
 } from "./constants";
@@ -565,14 +565,21 @@ export default function CataloguePage() {
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  {isEditableProductId(p.id) ? (
-                    <div className="flex items-center justify-end gap-4">
-                      <Link
-                        href={`/dashboard/catalogue/${p.id}`}
-                        className="eyebrow text-[9px] text-obsidian/60 hover:text-crimson transition-colors"
+                  <div className="flex items-center justify-end gap-4">
+                    <Link
+                      href={`/dashboard/catalogue/${p.id}`}
+                      className="eyebrow text-[9px] text-obsidian/60 hover:text-crimson transition-colors"
+                    >
+                      {d.catalogue.edit}
+                    </Link>
+                    {isBuiltInProductId(p.id) ? (
+                      <span
+                        className="eyebrow text-[9px] text-obsidian/25"
+                        title={d.catalogue.builtIn}
                       >
-                        {d.catalogue.edit}
-                      </Link>
+                        {d.catalogue.builtIn}
+                      </span>
+                    ) : (
                       <button
                         type="button"
                         onClick={() => handleDelete(p)}
@@ -581,15 +588,8 @@ export default function CataloguePage() {
                       >
                         {deletingId === p.id ? d.catalogue.deleting : d.catalogue.delete}
                       </button>
-                    </div>
-                  ) : (
-                    <p
-                      className="text-end font-body text-[10px] text-obsidian/30"
-                      title={d.catalogue.builtIn}
-                    >
-                      {d.catalogue.builtIn}
-                    </p>
-                  )}
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

@@ -13,7 +13,7 @@ import {
   CATEGORY_OPTIONS,
   EXISTING_IMAGES,
   inputCls,
-  isEditableProductId,
+  isBuiltInProductId,
   labelCls,
 } from "../constants";
 import NotesEditor, { type NoteRow } from "../NotesEditor";
@@ -32,7 +32,7 @@ export default function EditProductPage() {
   const d = dict[lang];
 
   const id = String(params.id ?? "");
-  const editable = isEditableProductId(id);
+  const builtIn = isBuiltInProductId(id);
 
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -68,11 +68,6 @@ export default function EditProductPage() {
     setForm((f) => ({ ...f, [k]: v }));
 
   useEffect(() => {
-    if (!editable) {
-      setLoading(false);
-      setNotFound(true);
-      return;
-    }
     let cancelled = false;
     (async () => {
       try {
@@ -117,7 +112,7 @@ export default function EditProductPage() {
     return () => {
       cancelled = true;
     };
-  }, [id, editable]);
+  }, [id]);
 
   const previewSrc = file ? URL.createObjectURL(file) : form.image;
 
@@ -206,9 +201,7 @@ export default function EditProductPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-6 text-center">
         <Emblem size={36} className="text-obsidian/20" />
-        <p className="display text-2xl text-obsidian/50">
-          {editable ? d.editForm.notFound : d.editForm.notEditable}
-        </p>
+        <p className="display text-2xl text-obsidian/50">{d.editForm.notFound}</p>
         <Link href="/dashboard/catalogue" className="eyebrow text-[10px] text-crimson link-underline">
           ← {d.editForm.back}
         </Link>
@@ -235,16 +228,21 @@ export default function EditProductPage() {
           <h1 className="display text-4xl sm:text-5xl text-obsidian" style={{ fontWeight: 600 }}>
             {d.editForm.title}
           </h1>
-          <p className="font-body text-[11px] text-obsidian/40 mt-3">#{id}</p>
+          <p className="font-body text-[11px] text-obsidian/40 mt-3">
+            #{id}
+            {builtIn && <span className="ms-2 text-obsidian/30">· {d.catalogue.builtIn}</span>}
+          </p>
         </div>
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={deleting}
-          className="eyebrow text-[10px] text-crimson border border-crimson/30 px-5 py-3 hover:bg-crimson hover:text-ivory transition-colors disabled:opacity-50 self-start md:self-auto"
-        >
-          {deleting ? d.editForm.deleting : d.editForm.delete}
-        </button>
+        {!builtIn && (
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={deleting}
+            className="eyebrow text-[10px] text-crimson border border-crimson/30 px-5 py-3 hover:bg-crimson hover:text-ivory transition-colors disabled:opacity-50 self-start md:self-auto"
+          >
+            {deleting ? d.editForm.deleting : d.editForm.delete}
+          </button>
+        )}
       </div>
 
       {success && (

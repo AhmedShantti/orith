@@ -155,65 +155,88 @@ export class ProductsService {
 
   async getOne(id: string): Promise<ApiResponse<unknown>> {
     const product = await this.prisma.product.findUnique({ where: { id } });
-    if (!product) {
-      throw new NotFoundException({
-        success: false,
-        data: null,
-        error: "Not Found",
-        message: "Product not found",
+    if (product) return ok(product);
+
+    // No DB row. If this is a built-in product, return its static definition in
+    // the DB field shape so the edit page can load and edit it.
+    const staticProduct = this.catalogue.findStaticById(id);
+    if (staticProduct) {
+      const now = new Date();
+      return ok({
+        id,
+        ...this.catalogue.staticToDbFields(staticProduct),
+        createdAt: now,
+        updatedAt: now,
       });
     }
-    return ok(product);
+
+    throw new NotFoundException({
+      success: false,
+      data: null,
+      error: "Not Found",
+      message: "Product not found",
+    });
   }
 
   async update(id: string, body: Record<string, unknown>) {
-    const product = await this.prisma.product.findUnique({ where: { id } });
-    if (!product) {
-      throw new NotFoundException({
-        success: false,
-        data: null,
-        error: "Not Found",
-        message: "Product not found",
-      });
-    }
     const b = body;
-    const updated = await this.prisma.product.update({
-      where: { id },
-      data: {
-        ...(b.nameEn !== undefined && { nameEn: String(b.nameEn) }),
-        ...(b.nameAr !== undefined && { nameAr: String(b.nameAr) }),
-        ...(b.descriptionEn !== undefined && {
-          descriptionEn: String(b.descriptionEn),
-        }),
-        ...(b.descriptionAr !== undefined && {
-          descriptionAr: String(b.descriptionAr),
-        }),
-        ...(b.price !== undefined && { price: parseFloat(String(b.price)) }),
-        ...(b.originalPrice !== undefined && {
-          originalPrice: b.originalPrice
-            ? parseFloat(String(b.originalPrice))
-            : null,
-        }),
-        ...(b.image !== undefined && { image: String(b.image) }),
-        ...(b.sizes !== undefined && { sizes: b.sizes as string[] }),
-        ...(b.category !== undefined && { category: String(b.category) }),
-        ...(b.badge !== undefined && { badge: (b.badge as string) || null }),
-        ...(b.brand !== undefined && { brand: parseBrand(b.brand) }),
-        ...(b.rating !== undefined && { rating: parseRating(b.rating) }),
-        ...(b.notesTop !== undefined && { notesTop: b.notesTop as string[] }),
-        ...(b.notesHeart !== undefined && {
-          notesHeart: b.notesHeart as string[],
-        }),
-        ...(b.notesBase !== undefined && {
-          notesBase: b.notesBase as string[],
-        }),
-        ...(b.noteImages !== undefined && {
-          noteImages: parseNoteImages(b.noteImages),
-        }),
-        ...(b.stock !== undefined && { stock: parseInt(String(b.stock)) }),
-      },
+    const data = {
+      ...(b.nameEn !== undefined && { nameEn: String(b.nameEn) }),
+      ...(b.nameAr !== undefined && { nameAr: String(b.nameAr) }),
+      ...(b.descriptionEn !== undefined && {
+        descriptionEn: String(b.descriptionEn),
+      }),
+      ...(b.descriptionAr !== undefined && {
+        descriptionAr: String(b.descriptionAr),
+      }),
+      ...(b.price !== undefined && { price: parseFloat(String(b.price)) }),
+      ...(b.originalPrice !== undefined && {
+        originalPrice: b.originalPrice
+          ? parseFloat(String(b.originalPrice))
+          : null,
+      }),
+      ...(b.image !== undefined && { image: String(b.image) }),
+      ...(b.sizes !== undefined && { sizes: b.sizes as string[] }),
+      ...(b.category !== undefined && { category: String(b.category) }),
+      ...(b.badge !== undefined && { badge: (b.badge as string) || null }),
+      ...(b.brand !== undefined && { brand: parseBrand(b.brand) }),
+      ...(b.rating !== undefined && { rating: parseRating(b.rating) }),
+      ...(b.notesTop !== undefined && { notesTop: b.notesTop as string[] }),
+      ...(b.notesHeart !== undefined && {
+        notesHeart: b.notesHeart as string[],
+      }),
+      ...(b.notesBase !== undefined && {
+        notesBase: b.notesBase as string[],
+      }),
+      ...(b.noteImages !== undefined && {
+        noteImages: parseNoteImages(b.noteImages),
+      }),
+      ...(b.stock !== undefined && { stock: parseInt(String(b.stock)) }),
+    };
+
+    const existing = await this.prisma.product.findUnique({ where: { id } });
+    if (existing) {
+      const updated = await this.prisma.product.update({ where: { id }, data });
+      return ok(updated, "Product updated successfully");
+    }
+
+    // No DB row yet. If this is a built-in product, materialize it as a DB
+    // override (keeping its original id) seeded from the static definition,
+    // then apply the edits on top.
+    const staticProduct = this.catalogue.findStaticById(id);
+    if (staticProduct) {
+      const created = await this.prisma.product.create({
+        data: { id, ...this.catalogue.staticToDbFields(staticProduct), ...data },
+      });
+      return ok(created, "Product updated successfully");
+    }
+
+    throw new NotFoundException({
+      success: false,
+      data: null,
+      error: "Not Found",
+      message: "Product not found",
     });
-    return ok(updated, "Product updated successfully");
   }
 
   async remove(id: string) {
