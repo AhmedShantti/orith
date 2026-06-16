@@ -83,6 +83,12 @@ model Product {
   sizes         String[]
   category      String
   badge         String?
+  // Optional house/brand line for the luxury product card. Null on legacy rows,
+  // where the storefront falls back to the configured store name.
+  brand         String?
+  // Optional editorial rating (0–5, halves allowed). Null on legacy rows, where
+  // the card simply hides the rating row.
+  rating        Float?
   notesTop      String[]
   notesHeart    String[]
   notesBase     String[]

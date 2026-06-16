@@ -1,3 +1,10 @@
+// A single fragrance note as shown on the luxury product card. `image` is
+// optional — the card falls back to a curated icon keyed off the note name.
+export interface FragranceNote {
+  name: string;
+  image?: string;
+}
+
 // Frontend types (legacy)
 export interface Product {
   id: string;
@@ -11,6 +18,12 @@ export interface Product {
   sizes: string[];
   category: string;
   badge?: "bestseller" | "new" | "limited" | "offer";
+  // Optional house/brand line shown above the product name. When absent the
+  // card falls back to the configured store name.
+  brand?: string;
+  // Optional 0–5 rating (supports halves). When absent the card hides the
+  // rating row rather than inventing a value.
+  rating?: number;
   notes?: {
     top: string[];
     heart: string[];
@@ -74,6 +87,8 @@ export interface BackendProduct {
   sizes: string[];
   category: string;
   badge: string | null;
+  brand?: string | null;
+  rating?: number | null;
   notesTop: string[];
   notesHeart: string[];
   notesBase: string[];

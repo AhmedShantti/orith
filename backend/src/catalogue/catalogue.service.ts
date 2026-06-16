@@ -36,6 +36,10 @@ export class CatalogueService {
       sizes: p.sizes,
       category: p.category,
       badge: (p.badge as Product["badge"]) ?? undefined,
+      // `brand`/`rating` are optional columns; read defensively so the mapping
+      // keeps working even against a DB that predates the migration.
+      brand: (p as { brand?: string | null }).brand ?? undefined,
+      rating: (p as { rating?: number | null }).rating ?? undefined,
       notes: {
         top: p.notesTop,
         heart: p.notesHeart,

@@ -13,6 +13,8 @@ export interface Product {
   sizes: string[];
   category: string;
   badge?: "bestseller" | "new" | "limited" | "offer";
+  brand?: string;
+  rating?: number;
   notes?: {
     top: string[];
     heart: string[];

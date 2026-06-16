@@ -672,6 +672,98 @@ body {
 }
 .tile:hover .tile-img { transform: scale(1.06); }
 
+/* ============================================================
+   Luxury product card — editorial perfume-boutique card.
+   Vertical, centred, generous negative space. Soft warm field,
+   borderless, lifts and deepens its shadow on hover; the bottle
+   floats and scales gently.
+   ============================================================ */
+.lux-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #FBF8F2;
+  box-shadow: 0 4px 24px rgba(12, 11, 10, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
+.lux-card:hover,
+.lux-card:focus-within {
+  transform: translateY(-6px);
+  box-shadow: 0 22px 60px rgba(12, 11, 10, 0.13);
+}
+
+/* Floating bottle with a soft contact shadow; scales slightly on hover. */
+.lux-card-img {
+  filter: drop-shadow(0 18px 26px rgba(12, 11, 10, 0.18));
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lux-card:hover .lux-card-img,
+.lux-card:focus-within .lux-card-img {
+  transform: scale(1.06) translateY(-4px);
+}
+
+/* Full-width CTA: dark by default, inverts to crimson. */
+.lux-card-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 1.05rem 1.5rem;
+  background: #0C0B0A;
+  color: #F6F2EB;
+  font-family: var(--font-jost);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  border: 1px solid #0C0B0A;
+  transition: background 0.3s ease, border-color 0.3s ease,
+    letter-spacing 0.3s ease, color 0.3s ease;
+}
+.lux-card-cta:hover,
+.lux-card-cta:focus-visible {
+  background: #8E1B26;
+  border-color: #8E1B26;
+  letter-spacing: 0.34em;
+}
+.lux-card-cta:focus-visible {
+  outline: 2px solid #8E1B26;
+  outline-offset: 3px;
+}
+
+/* Line clamps used by the card. */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lux-card,
+  .lux-card-img,
+  .lux-card-cta {
+    transition: none;
+  }
+  .lux-card:hover,
+  .lux-card:focus-within {
+    transform: none;
+  }
+  .lux-card:hover .lux-card-img,
+  .lux-card:focus-within .lux-card-img {
+    transform: none;
+  }
+}
+
 /* ---- Checkout step transition ---- */
 .checkout-step {
   animation: checkoutStepIn 0.32s cubic-bezier(0.22, 1, 0.36, 1);

@@ -10,6 +10,13 @@ import { SearchIcon } from "../icons";
 
 const fmt = (n: number) => n.toLocaleString();
 
+/** Comma-separated input → clean string[]. */
+const splitNotes = (v: string): string[] =>
+  v
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
 const CATEGORY_OPTIONS = ["oriental", "floral", "woody", "fresh", "powdery"];
 const BADGE_OPTIONS = ["bestseller", "new", "limited", "offer"];
 const EXISTING_IMAGES = Array.from(
@@ -46,6 +53,11 @@ export default function CataloguePage() {
     category: "oriental",
     sizes: "100ml",
     badge: "",
+    brand: "",
+    rating: "",
+    notesTop: "",
+    notesHeart: "",
+    notesBase: "",
     image: EXISTING_IMAGES[0],
   });
   const [file, setFile] = useState<File | null>(null);
@@ -131,6 +143,11 @@ export default function CataloguePage() {
             .map((s) => s.trim())
             .filter(Boolean),
           badge: form.badge || undefined,
+          brand: form.brand.trim() || undefined,
+          rating: form.rating.trim() ? Number(form.rating) : undefined,
+          notesTop: splitNotes(form.notesTop),
+          notesHeart: splitNotes(form.notesHeart),
+          notesBase: splitNotes(form.notesBase),
           image,
         }),
       });
@@ -149,6 +166,11 @@ export default function CataloguePage() {
         category: "oriental",
         sizes: "100ml",
         badge: "",
+        brand: "",
+        rating: "",
+        notesTop: "",
+        notesHeart: "",
+        notesBase: "",
         image: EXISTING_IMAGES[0],
       });
       setFile(null);
@@ -280,6 +302,28 @@ export default function CataloguePage() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label className={labelCls}>{d.addForm.brand}</label>
+                <input
+                  className={inputCls}
+                  value={form.brand}
+                  onChange={(e) => set("brand", e.target.value)}
+                  placeholder={d.addForm.brandPlaceholder}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>{d.addForm.rating}</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={5}
+                  step={0.5}
+                  className={inputCls}
+                  value={form.rating}
+                  onChange={(e) => set("rating", e.target.value)}
+                  placeholder="0 – 5"
+                />
+              </div>
               <div className="sm:col-span-2">
                 <label className={labelCls}>{d.addForm.descEn}</label>
                 <textarea
@@ -299,6 +343,40 @@ export default function CataloguePage() {
                   onChange={(e) => set("descriptionAr", e.target.value)}
                   dir="rtl"
                 />
+              </div>
+
+              {/* Fragrance notes — comma separated, optional */}
+              <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div>
+                  <label className={labelCls}>{d.addForm.notesTop}</label>
+                  <input
+                    className={inputCls}
+                    value={form.notesTop}
+                    onChange={(e) => set("notesTop", e.target.value)}
+                    placeholder={d.addForm.notesPlaceholder}
+                    dir="ltr"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>{d.addForm.notesHeart}</label>
+                  <input
+                    className={inputCls}
+                    value={form.notesHeart}
+                    onChange={(e) => set("notesHeart", e.target.value)}
+                    placeholder={d.addForm.notesPlaceholder}
+                    dir="ltr"
+                  />
+                </div>
+                <div>
+                  <label className={labelCls}>{d.addForm.notesBase}</label>
+                  <input
+                    className={inputCls}
+                    value={form.notesBase}
+                    onChange={(e) => set("notesBase", e.target.value)}
+                    placeholder={d.addForm.notesPlaceholder}
+                    dir="ltr"
+                  />
+                </div>
               </div>
             </div>
 

@@ -12,6 +12,36 @@ import type { Product } from "../../catalogue/catalogue.types";
 
 const VALID_CATEGORIES = ["oriental", "floral", "woody", "fresh", "powdery"];
 const VALID_BADGES = ["bestseller", "new", "limited", "offer"];
+const MAX_RATING = 5;
+
+/** Normalize an optional brand line; empty/whitespace → null. */
+function parseBrand(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+/** Clamp an optional rating into 0–5; anything non-positive/invalid → null. */
+function parseRating(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const num = Number(value);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  return Math.min(MAX_RATING, Math.max(0, num));
+}
+
+/** Accept `string[]` or a comma-separated string; return a clean string[]. */
+function parseNotes(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v).trim()).filter(Boolean);
+  }
+  if (typeof value === "string") {
+    return value
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
 
 @Injectable()
 export class ProductsService {
@@ -67,6 +97,9 @@ export class ProductsService {
         ? (body.badge as Product["badge"])
         : undefined;
 
+    const brand = parseBrand(body.brand);
+    const rating = parseRating(body.rating);
+
     // Persist to the Supabase `Product` table (the same store update/delete
     // use). Previously this wrote to an ephemeral JSON file, so products were
     // never durably saved.
@@ -82,9 +115,11 @@ export class ProductsService {
           sizes,
           category,
           badge: badge ?? null,
-          notesTop: [],
-          notesHeart: [],
-          notesBase: [],
+          brand,
+          rating,
+          notesTop: parseNotes(body.notesTop),
+          notesHeart: parseNotes(body.notesHeart),
+          notesBase: parseNotes(body.notesBase),
         },
       });
       return { product };
@@ -145,6 +180,8 @@ export class ProductsService {
         ...(b.sizes !== undefined && { sizes: b.sizes as string[] }),
         ...(b.category !== undefined && { category: String(b.category) }),
         ...(b.badge !== undefined && { badge: (b.badge as string) || null }),
+        ...(b.brand !== undefined && { brand: parseBrand(b.brand) }),
+        ...(b.rating !== undefined && { rating: parseRating(b.rating) }),
         ...(b.notesTop !== undefined && { notesTop: b.notesTop as string[] }),
         ...(b.notesHeart !== undefined && {
           notesHeart: b.notesHeart as string[],

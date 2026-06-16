@@ -29,6 +29,9 @@ export default function FeaturedProducts() {
               sizes: p.sizes,
               category: p.category,
               badge: p.badge,
+              brand: p.brand,
+              rating: p.rating,
+              notes: p.notes,
             }))
           );
         }
