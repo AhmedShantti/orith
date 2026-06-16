@@ -1,5 +1,5 @@
 // ✅ Replace with this
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 // Create two Prisma clients - one for local, one for production
 const localDB = new PrismaClient({
@@ -32,10 +32,13 @@ async function migrateData() {
     console.log("📦 Migrating products...");
     const products = await localDB.product.findMany();
     for (const product of products) {
+      const { noteImages, ...rest } = product;
       await prodDB.product.upsert({
         where: { id: product.id },
         update: {},
-        create: product,
+        // `noteImages` is a nullable JSON column; Prisma's create input needs
+        // `Prisma.JsonNull` rather than a raw `null`.
+        create: { ...rest, noteImages: noteImages ?? Prisma.JsonNull },
       });
     }
     console.log(`✓ Migrated ${products.length} products\n`);

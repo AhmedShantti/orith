@@ -8,6 +8,24 @@ import {
 } from "./catalogue.data";
 import type { Product, Offer } from "./catalogue.types";
 
+/**
+ * Coerce a raw JSON value from the `noteImages` column into a clean
+ * `{ name: url }` map, dropping any non-string entries. Returns undefined when
+ * there is nothing usable so the field is simply omitted from the response.
+ */
+function coerceNoteImages(value: unknown): Record<string, string> | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+  const out: Record<string, string> = {};
+  for (const [name, url] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof url === "string" && url.trim().length > 0) {
+      out[name] = url;
+    }
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 // The catalogue is the static base collection (catalogue.data) PLUS any
 // admin-created products, which now live durably in the Supabase `Product`
 // table (previously they were written to an ephemeral JSON file, so they were
@@ -45,6 +63,7 @@ export class CatalogueService {
         heart: p.notesHeart,
         base: p.notesBase,
       },
+      noteImages: coerceNoteImages((p as { noteImages?: unknown }).noteImages),
     };
   }
 

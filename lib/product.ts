@@ -69,15 +69,19 @@ export function getDisplayNotes(
 ): FragranceNote[] {
   const raw = (product as { notes?: unknown }).notes;
   const collected = toFragranceNotes(raw);
+  const imageMap = product.noteImages ?? undefined;
 
-  // De-duplicate by case-insensitive name while preserving order.
+  // De-duplicate by case-insensitive name while preserving order, and attach a
+  // per-note image from the product's `noteImages` map when one isn't already
+  // carried by a structured note.
   const seen = new Set<string>();
   const unique: FragranceNote[] = [];
   for (const note of collected) {
     const key = note.name.toLowerCase();
     if (note.name && !seen.has(key)) {
       seen.add(key);
-      unique.push(note);
+      const image = note.image ?? imageMap?.[note.name];
+      unique.push(image ? { name: note.name, image } : { name: note.name });
     }
   }
   return unique.slice(0, limit);

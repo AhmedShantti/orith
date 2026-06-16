@@ -63,6 +63,13 @@ export const dict = {
       clearFilters: "Clear filters",
       addProduct: "Add Product",
       cancel: "Cancel",
+      manage: "Manage",
+      edit: "Edit",
+      delete: "Delete",
+      deleting: "Deleting…",
+      builtIn: "Built-in",
+      deleteConfirm: "Delete this product? This cannot be undone.",
+      deleteFailed: "Could not delete the product. Please try again.",
     },
 
     addForm: {
@@ -92,6 +99,30 @@ export const dict = {
       added: "Product added to the website",
       errName: "Enter both English and Arabic names",
       errPrice: "Enter a valid price",
+    },
+
+    editForm: {
+      title: "Edit Product",
+      back: "Back to Catalogue",
+      notFound: "Product not found",
+      notEditable: "Built-in catalogue products can't be edited here.",
+      save: "Save Changes",
+      saving: "Saving…",
+      saved: "Changes saved",
+      delete: "Delete Product",
+      deleting: "Deleting…",
+      stock: "Stock",
+      originalPrice: "Original price (optional)",
+      notesTitle: "Fragrance Notes & Icons",
+      notesSubtitle:
+        "Add notes per layer and an optional icon/image for each. The card shows the icon when set, otherwise a curated glyph.",
+      notesTop: "Top Notes",
+      notesHeart: "Heart Notes",
+      notesBase: "Base Notes",
+      addNote: "Add note",
+      notePlaceholder: "Note name (e.g. Rose)",
+      noteImagePlaceholder: "Image URL (optional)",
+      uploadNote: "Uploading",
     },
 
     table: {
@@ -206,6 +237,13 @@ export const dict = {
       clearFilters: "مسح عوامل التصفية",
       addProduct: "إضافة منتج",
       cancel: "إلغاء",
+      manage: "إدارة",
+      edit: "تعديل",
+      delete: "حذف",
+      deleting: "جارٍ الحذف…",
+      builtIn: "أساسي",
+      deleteConfirm: "حذف هذا المنتج؟ لا يمكن التراجع عن ذلك.",
+      deleteFailed: "تعذّر حذف المنتج. حاول مرة أخرى.",
     },
 
     addForm: {
@@ -235,6 +273,30 @@ export const dict = {
       added: "تمت إضافة المنتج إلى الموقع",
       errName: "أدخل الاسم بالإنجليزية والعربية",
       errPrice: "أدخل سعراً صحيحاً",
+    },
+
+    editForm: {
+      title: "تعديل المنتج",
+      back: "العودة إلى الكتالوج",
+      notFound: "المنتج غير موجود",
+      notEditable: "لا يمكن تعديل منتجات الكتالوج الأساسية من هنا.",
+      save: "حفظ التغييرات",
+      saving: "جارٍ الحفظ…",
+      saved: "تم حفظ التغييرات",
+      delete: "حذف المنتج",
+      deleting: "جارٍ الحذف…",
+      stock: "المخزون",
+      originalPrice: "السعر الأصلي (اختياري)",
+      notesTitle: "نوتات العطر والأيقونات",
+      notesSubtitle:
+        "أضف النوتات لكل طبقة مع أيقونة/صورة اختيارية لكل نوتة. تظهر الأيقونة عند تعيينها، وإلا تُعرض أيقونة منسّقة.",
+      notesTop: "نوتات القمة",
+      notesHeart: "نوتات القلب",
+      notesBase: "نوتات القاعدة",
+      addNote: "إضافة نوتة",
+      notePlaceholder: "اسم النوتة (مثال: ورد)",
+      noteImagePlaceholder: "رابط الصورة (اختياري)",
+      uploadNote: "جارٍ الرفع",
     },
 
     table: {

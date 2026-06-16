@@ -20,6 +20,29 @@ function authHeaders(): Record<string, string> {
   };
 }
 
+/**
+ * Upload an image to the backend and return its public path (e.g.
+ * `/products/upload-xyz.png`). Sends the admin token when present so it works
+ * from guarded dashboard contexts.
+ */
+export async function uploadImage(file: File): Promise<string> {
+  const fd = new FormData();
+  fd.append("file", file);
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("orith_token") : null;
+  const res = await fetch(`${BASE_URL}/api/upload`, {
+    method: "POST",
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: fd,
+  });
+  if (!res.ok) {
+    const err = (await res.json().catch(() => ({}))) as { error?: string };
+    throw new Error(err.error ?? "Upload failed");
+  }
+  const json = (await res.json()) as { path: string };
+  return json.path;
+}
+
 async function handleResponse<T>(res: Response): Promise<T> {
   if (res.status === 401) {
     if (typeof window !== "undefined") {

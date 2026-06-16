@@ -1,32 +1,24 @@
 "use client";
-import { apiUrl } from "@/lib/api";
+import { api, apiUrl } from "@/lib/api";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Emblem from "@/components/Emblem";
 import { useLang } from "@/context/LanguageContext";
-import type { Product } from "@/types";
+import type { ApiResponse, Product } from "@/types";
 import { dict } from "../dict";
 import { SearchIcon } from "../icons";
+import {
+  BADGE_OPTIONS,
+  CATEGORY_OPTIONS,
+  EXISTING_IMAGES,
+  inputCls,
+  isEditableProductId,
+  labelCls,
+  splitNotes,
+} from "./constants";
 
 const fmt = (n: number) => n.toLocaleString();
-
-/** Comma-separated input → clean string[]. */
-const splitNotes = (v: string): string[] =>
-  v
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-
-const CATEGORY_OPTIONS = ["oriental", "floral", "woody", "fresh", "powdery"];
-const BADGE_OPTIONS = ["bestseller", "new", "limited", "offer"];
-const EXISTING_IMAGES = Array.from(
-  { length: 31 },
-  (_, i) => `/products/bottle-${i + 1}.png`
-);
-
-const inputCls =
-  "w-full bg-transparent border-b border-obsidian/20 focus:border-crimson py-2.5 text-sm font-body text-obsidian placeholder-obsidian/30 focus:outline-none transition-colors";
-const labelCls = "eyebrow text-[9px] text-obsidian/45 mb-2 block";
 
 export default function CataloguePage() {
   const { lang } = useLang();
@@ -36,6 +28,7 @@ export default function CataloguePage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeCat, setActiveCat] = useState("all");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // add-product form
   const [showForm, setShowForm] = useState(false);
@@ -70,6 +63,20 @@ export default function CataloguePage() {
     const res = await fetch(apiUrl("/api/products"));
     const json = (await res.json()) as { products: Product[] };
     setProducts(json.products);
+  };
+
+  const handleDelete = async (p: Product) => {
+    if (!window.confirm(d.catalogue.deleteConfirm)) return;
+    setDeletingId(p.id);
+    try {
+      await api.delete<ApiResponse<null>>(`/api/products/${p.id}`);
+      setProducts((prev) => prev.filter((x) => x.id !== p.id));
+    } catch (e) {
+      console.error("[catalogue] delete failed:", e);
+      window.alert(d.catalogue.deleteFailed);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   useEffect(() => {
@@ -498,6 +505,9 @@ export default function CataloguePage() {
                   {h}
                 </th>
               ))}
+              <th className="eyebrow text-[9px] text-obsidian/40 text-end px-6 py-4 font-normal">
+                {d.catalogue.manage}
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -553,6 +563,33 @@ export default function CataloguePage() {
                   <span className="font-body text-[10px] text-obsidian/40 ms-1">
                     {d.egp}
                   </span>
+                </td>
+                <td className="px-6 py-4">
+                  {isEditableProductId(p.id) ? (
+                    <div className="flex items-center justify-end gap-4">
+                      <Link
+                        href={`/dashboard/catalogue/${p.id}`}
+                        className="eyebrow text-[9px] text-obsidian/60 hover:text-crimson transition-colors"
+                      >
+                        {d.catalogue.edit}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(p)}
+                        disabled={deletingId === p.id}
+                        className="eyebrow text-[9px] text-crimson/70 hover:text-crimson transition-colors disabled:opacity-40"
+                      >
+                        {deletingId === p.id ? d.catalogue.deleting : d.catalogue.delete}
+                      </button>
+                    </div>
+                  ) : (
+                    <p
+                      className="text-end font-body text-[10px] text-obsidian/30"
+                      title={d.catalogue.builtIn}
+                    >
+                      {d.catalogue.builtIn}
+                    </p>
+                  )}
                 </td>
               </tr>
             ))}

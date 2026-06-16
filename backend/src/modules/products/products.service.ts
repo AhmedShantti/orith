@@ -29,6 +29,23 @@ function parseRating(value: unknown): number | null {
   return Math.min(MAX_RATING, Math.max(0, num));
 }
 
+/**
+ * Normalize an optional note-image map into a clean `{ name: url }` object,
+ * dropping non-string entries. Always returns an object (possibly empty) so it
+ * can be stored in the JSON column.
+ */
+function parseNoteImages(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const out: Record<string, string> = {};
+  for (const [name, url] of Object.entries(value as Record<string, unknown>)) {
+    const key = name.trim();
+    if (key && typeof url === "string" && url.trim().length > 0) {
+      out[key] = url.trim();
+    }
+  }
+  return out;
+}
+
 /** Accept `string[]` or a comma-separated string; return a clean string[]. */
 function parseNotes(value: unknown): string[] {
   if (Array.isArray(value)) {
@@ -120,6 +137,7 @@ export class ProductsService {
           notesTop: parseNotes(body.notesTop),
           notesHeart: parseNotes(body.notesHeart),
           notesBase: parseNotes(body.notesBase),
+          noteImages: parseNoteImages(body.noteImages),
         },
       });
       return { product };
@@ -188,6 +206,9 @@ export class ProductsService {
         }),
         ...(b.notesBase !== undefined && {
           notesBase: b.notesBase as string[],
+        }),
+        ...(b.noteImages !== undefined && {
+          noteImages: parseNoteImages(b.noteImages),
         }),
         ...(b.stock !== undefined && { stock: parseInt(String(b.stock)) }),
       },

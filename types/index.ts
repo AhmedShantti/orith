@@ -29,6 +29,9 @@ export interface Product {
     heart: string[];
     base: string[];
   };
+  // Optional map of note name -> icon/image URL. The card resolves a note's
+  // image by name; absent entries fall back to a curated icon.
+  noteImages?: Record<string, string>;
 }
 
 export interface CartItem {
@@ -92,6 +95,7 @@ export interface BackendProduct {
   notesTop: string[];
   notesHeart: string[];
   notesBase: string[];
+  noteImages?: Record<string, string> | null;
   stock: number;
   createdAt: Date;
   updatedAt: Date;

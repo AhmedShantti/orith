@@ -20,6 +20,8 @@ export interface Product {
     heart: string[];
     base: string[];
   };
+  /** Map of note name -> icon/image URL. */
+  noteImages?: Record<string, string>;
 }
 
 export interface Offer {

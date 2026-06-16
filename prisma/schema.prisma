@@ -92,6 +92,10 @@ model Product {
   notesTop      String[]
   notesHeart    String[]
   notesBase     String[]
+  // Optional map of fragrance-note name -> icon/image URL, e.g.
+  // { "Rose": "/products/note-rose.png" }. Null/absent on legacy rows, where
+  // the card falls back to a curated icon keyed off the note name.
+  noteImages    Json?
   stock         Int         @default(100)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
