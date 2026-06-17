@@ -129,7 +129,7 @@ function ProductCard({ product }: ProductCardProps) {
       )}
 
       {/* ---- Description preview ---- */}
-      {description && (
+      {/* {description && (
         <p className="mt-6 font-body text-[13px] leading-relaxed text-obsidian/55 line-clamp-3">
           {description}
         </p>
