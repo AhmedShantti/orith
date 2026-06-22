@@ -6,9 +6,13 @@ import { useLang } from "@/context/LanguageContext";
 import { useSiteSettings } from "@/context/SiteSettingsContext";
 import { products } from "@/data/products";
 import Emblem from "./Emblem";
+import { ArrowDown } from "lucide-react";
+import i18n from "i18next";
+
 
 // Hero spotlights the first 8 of the catalog. Full 31-item collection lives at /products.
 const HERO_BOTTLES = products.slice(0, 8);
+const dir = i18n.dir();
 
 export default function Hero() {
   const { t, lang } = useLang();
@@ -18,6 +22,8 @@ export default function Hero() {
   const selectedProduct = HERO_BOTTLES[selected];
   const selectedName =
     lang === "ar" ? selectedProduct.nameAr : selectedProduct.nameEn;
+  const selectedDesc =
+    lang === "ar" ? selectedProduct.descriptionAr : selectedProduct.descriptionEn;
 
   // Editable hero content (falls back to the built-in copy).
   const siteName = s.text("site_name", "ORITH");
@@ -110,103 +116,21 @@ export default function Hero() {
           <ArrowDown />
           <span className="w-8 h-px bg-gold/30" />
         </div>
-        <p className="text-[9px] tracking-[0.35em] uppercase text-ivory/35 font-body mt-2">
-          Discover
-        </p>
-      </div>
 
-      {/* Bottle lineup — featured 8 bottles (full collection is on /products) */}
-      <div className="relative z-10 flex-1 w-full flex items-center justify-center px-4">
-        <div
-          className="flex items-end gap-3 sm:gap-5 lg:gap-7 overflow-x-auto sm:overflow-visible w-full max-w-[1300px] px-6 py-12 scrollbar-hide"
-          style={{ scrollbarWidth: "none" }}
-        >
-          {HERO_BOTTLES.map((p, i) => {
-            const isSelected = selected === i;
-            const name = lang === "ar" ? p.nameAr : p.nameEn;
-            return (
-              <button
-                key={p.id}
-                onClick={() => setSelected(i)}
-                className="group relative flex-shrink-0 transition-all duration-700 outline-none"
-                aria-label={name}
-              >
-                {/* Label above selected */}
-                <div
-                  className={`absolute left-1/2 -translate-x-1/2 transition-all duration-500 whitespace-nowrap text-center ${
-                    isSelected
-                      ? "opacity-100 -top-14"
-                      : "opacity-0 -top-10"
-                  }`}
-                >
-                  <p
-                    className="font-display text-xs sm:text-sm text-ivory tracking-[0.15em]"
-                    style={{
-                      fontFamily: "var(--font-cinzel)",
-                      fontStyle: lang === "en" ? "italic" : "normal",
-                      fontWeight: 400,
-                    }}
-                  >
-                    {name}
-                  </p>
-                  <p className="text-[7px] sm:text-[8px] tracking-[0.4em] uppercase text-ivory/35 font-body mt-1">
-                    Extrait de Parfum
-                  </p>
-                </div>
-
-                {/* Bottle frame */}
-                <div
-                  className={`relative transition-all duration-700 ease-out ${
-                    isSelected
-                      ? "w-[120px] h-[180px] sm:w-[140px] sm:h-[210px] lg:w-[160px] lg:h-[240px] p-4 bg-black/40 backdrop-blur-sm"
-                      : "w-[90px] h-[160px] sm:w-[105px] sm:h-[185px] lg:w-[120px] lg:h-[210px] p-3 opacity-55 hover:opacity-85"
-                  }`}
-                  style={
-                    isSelected
-                      ? {
-                          border: "1px solid rgba(178, 58, 68, 0.75)",
-                          boxShadow:
-                            "0 0 0 1px rgba(142,27,38,0.18), 0 30px 60px rgba(142,27,38,0.22), inset 0 0 30px rgba(178,58,68,0.08)",
-                        }
-                      : {}
-                  }
-                >
-                  <Image
-                    src={p.image}
-                    alt={name}
-                    fill
-                    className="object-contain p-2"
-                    sizes="160px"
-                  />
-                  {/* Corner accents on selected */}
-                  {isSelected && (
-                    <>
-                      <CornerTick className="absolute -top-px -left-px" rotate={0} />
-                      <CornerTick className="absolute -top-px -right-px" rotate={90} />
-                      <CornerTick className="absolute -bottom-px -right-px" rotate={180} />
-                      <CornerTick className="absolute -bottom-px -left-px" rotate={270} />
-                    </>
-                  )}
-                </div>
-
-                {/* Reflection / shelf glow under bottle */}
-                <div
-                  className={`absolute left-1/2 -translate-x-1/2 -bottom-3 transition-opacity duration-500 ${
-                    isSelected ? "opacity-100" : "opacity-30"
-                  }`}
-                  style={{
-                    width: isSelected ? "120%" : "90%",
-                    height: "10px",
-                    background:
-                      "radial-gradient(ellipse at center, rgba(178,58,68,0.45) 0%, transparent 70%)",
-                    filter: "blur(4px)",
-                  }}
-                />
-              </button>
-            );
-          })}
+        {/* Featured bottle — large, centered, grounded; cap overlaps the letters */}
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-0 z-10 h-[74vh] sm:h-[78vh] w-[min(400px,80vw)]">
+          <div className="bottle-glow relative w-full h-full flex items-end justify-center">
+            <Image
+              key={selectedProduct.id}
+              src={selectedProduct.image}
+              alt={selectedName}
+              fill
+              priority
+              sizes="(max-width: 640px) 80vw, 400px"
+              className="object-contain relative z-10 drop-shadow-[0_40px_70px_rgba(0,0,0,0.75)] animate-[fadeIn_0.6s_ease]"
+            />
+          </div>
         </div>
-      </div>
 
       {/* Bottom CTA block */}
       <div className="relative z-10 flex flex-col items-center pb-24 sm:pb-28">
@@ -224,25 +148,55 @@ export default function Hero() {
         </Link>
       </div>
 
-      {/* Position indicator dots (faint) */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-        {HERO_BOTTLES.map((_, i) => (
+        {/* Emblem badge bottom-start (ZORVYN circular logo cue) */}
+        <div className="absolute bottom-6 start-6 z-20 w-12 h-12 rounded-full border border-ivory/15 items-center justify-center hidden lg:flex">
+          <Emblem size={22} className="text-crimson-light" />
+        </div>
+
+        {/* Prev / next + dot indicators bottom-center (replaces thumbnail rail) */}
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-4">
           <button
-            key={i}
-            onClick={() => setSelected(i)}
-            className={`h-px transition-all duration-500 ${
-              i === selected
-                ? "w-6 bg-gold"
-                : "w-3 bg-ivory/20 hover:bg-ivory/40"
-            }`}
-            aria-label={`Select bottle ${i + 1}`}
-          />
-        ))}
+            onClick={() => setSelected((s) => (s - 1 + HERO_BOTTLES.length) % HERO_BOTTLES.length)}
+            className="text-ivory/40 hover:text-crimson-light transition-colors"
+            aria-label="Previous bottle"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+              <path d={dir === "rtl" ? "M5 12h14M12 5l7 7-7 7" : "M19 12H5M12 19l-7-7 7-7"} />
+            </svg>
+          </button>
+          <div className="flex items-center gap-1.5">
+            {HERO_BOTTLES.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setSelected(i)}
+                aria-label={`Select bottle ${i + 1}`}
+                className={`h-px transition-all duration-500 ${
+                  i === selected ? "w-7 bg-crimson-light" : "w-3 bg-ivory/20 hover:bg-ivory/40"
+                }`}
+              />
+            ))}
+          </div>
+          <button
+            onClick={() => setSelected((s) => (s + 1) % HERO_BOTTLES.length)}
+            className="text-ivory/40 hover:text-crimson-light transition-colors"
+            aria-label="Next bottle"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+              <path d={dir === "rtl" ? "M19 12H5M12 19l-7-7 7-7" : "M5 12h14M12 5l7 7-7 7"} />
+            </svg>
+          </button>
+        </div>
       </div>
 
-      {/* Lang chip bottom-right (matches reference) */}
-      <div className="absolute bottom-6 right-6 text-[9px] tracking-[0.4em] uppercase text-ivory/40 font-body z-10">
-        {lang}
+      {/* Mobile + tablet copy (stacked, below the stage) */}
+      <div className="relative z-20 lg:hidden flex flex-col items-center text-center px-6 mb-6">
+        <p className="product-name text-2xl text-ivory mb-2" lang={lang}>{selectedName}</p>
+        <p className="font-body text-xs text-ivory/55 leading-relaxed max-w-xs mb-5">
+          {selectedDesc.length > 120 ? selectedDesc.slice(0, 117) + "…" : selectedDesc}
+        </p>
+        <Link href={`/products/${selectedProduct.id}`} className="btn-pill">
+          {lang === "ar" ? "تسوق الآن" : "Shop Now"}
+        </Link>
       </div>
 
       <style jsx>{`
@@ -251,46 +205,5 @@ export default function Hero() {
         }
       `}</style>
     </section>
-  );
-}
-
-function ArrowDown() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <polyline points="6 13 12 19 18 13" />
-    </svg>
-  );
-}
-
-function CornerTick({
-  className = "",
-  rotate = 0,
-}: {
-  className?: string;
-  rotate?: number;
-}) {
-  return (
-    <div
-      className={className}
-      style={{ width: 10, height: 10, transform: `rotate(${rotate}deg)` }}
-    >
-      <svg viewBox="0 0 10 10" fill="none">
-        <path
-          d="M0 0 L4 0 M0 0 L0 4"
-          stroke="#B23A44"
-          strokeWidth="1"
-        />
-      </svg>
-    </div>
   );
 }
